@@ -1,0 +1,439 @@
+@import "../../../../styles/responsive.scss";
+@import "../../../../styles/themes.scss";
+
+.files-container {
+  width: 100%;
+}
+
+.files-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.file-item {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  transition: all 0.2s ease;
+  @include themed() {
+    border-bottom: 1px solid rgba(t(border-color), 0.5);
+  }
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &.preview {
+    cursor: pointer;
+
+    &:hover {
+      @include themed() {
+        background: rgba(t(button-primary), 0.05);
+      }
+
+      .file-type-badge {
+        @include themed() {
+          border-color: t(button-primary);
+        }
+
+        svg {
+          @include themed() {
+            color: t(button-primary);
+          }
+        }
+
+        .file-extension {
+          @include themed() {
+            color: t(button-primary);
+          }
+        }
+      }
+
+      .file-title {
+        @include themed() {
+          color: t(button-primary);
+        }
+      }
+    }
+  }
+
+  &.locked {
+    opacity: 0.7;
+
+    .file-title {
+      @include themed() {
+        color: t(text-secondary);
+      }
+    }
+  }
+
+  @include sm {
+    padding: 0.625rem 0.75rem;
+  }
+
+  .file-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 0.75rem;
+    flex-shrink: 0;
+
+    .file-type-badge {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      @include themed() {
+        border: 1px solid t(border-color);
+      }
+      border-radius: 4px;
+      padding: 0.25rem;
+      min-width: 40px;
+      transition: all 0.2s ease;
+
+      svg {
+        @include themed() {
+          color: t(text-secondary);
+        }
+        transition: color 0.2s ease;
+        margin-bottom: 1px;
+      }
+
+      .file-extension {
+        font-size: 0.5rem;
+        font-weight: 700;
+        @include themed() {
+          color: t(text-secondary);
+        }
+        transition: color 0.2s ease;
+        line-height: 1;
+        text-transform: uppercase;
+      }
+
+      @include sm {
+        min-width: 36px;
+        padding: 0.1875rem;
+
+        .file-extension {
+          font-size: 0.4375rem;
+        }
+      }
+    }
+
+    @include sm {
+      margin-right: 0.5rem;
+    }
+  }
+
+  .file-info {
+    flex: 1;
+    min-width: 0;
+
+    .file-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.25rem;
+      gap: 0.5rem;
+
+      .file-title {
+        font-size: 0.875rem;
+        font-weight: 500;
+        margin: 0;
+        @include themed() {
+          color: t(text-primary);
+        }
+        transition: color 0.2s ease;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+
+        @include sm {
+          font-size: 0.8125rem;
+        }
+      }
+
+      .preview-label {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-size: 0.6875rem;
+        font-weight: 600;
+        @include themed() {
+          color: t(button-primary);
+        }
+        flex-shrink: 0;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+
+        @include sm {
+          font-size: 0.625rem;
+        }
+      }
+    }
+
+    .file-meta {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.75rem;
+      @include themed() {
+        color: t(text-secondary);
+      }
+
+      .file-type {
+        font-weight: 500;
+      }
+
+      .file-resource {
+        font-size: 0.6875rem;
+        opacity: 0.8;
+        text-transform: capitalize;
+      }
+
+      @include sm {
+        gap: 0.5rem;
+        font-size: 0.6875rem;
+
+        .file-resource {
+          font-size: 0.625rem;
+        }
+      }
+    }
+  }
+
+  .file-actions {
+    margin-left: 1rem;
+    flex-shrink: 0;
+
+    .file-buttons {
+      display: flex;
+      gap: 0.5rem;
+
+      button {
+        @include themed() {
+          background: none;
+          color: t(text-secondary);
+          border: 1px solid t(border-color);
+        }
+        padding: 0.375rem;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        &:hover {
+          @include themed() {
+            border-color: t(button-primary);
+            color: t(button-primary);
+          }
+        }
+
+        @include sm {
+          padding: 0.25rem;
+        }
+      }
+
+      .preview-btn:hover {
+        @include themed() {
+          background: rgba(t(button-primary), 0.1);
+        }
+      }
+
+      .download-btn:hover {
+        @include themed() {
+          background: rgba(34, 197, 94, 0.1);
+          border-color: #22c55e;
+          color: #22c55e;
+        }
+      }
+    }
+
+    .locked-indicator {
+      @include themed() {
+        color: t(text-secondary);
+      }
+      opacity: 0.5;
+      padding: 0.375rem;
+    }
+
+    @include sm {
+      margin-left: 0.5rem;
+    }
+  }
+}
+
+.files-load-more {
+  display: flex;
+  justify-content: center;
+  margin: 1rem 0;
+
+  .load-more-files-btn {
+    @include themed() {
+      background: none;
+      color: t(button-primary);
+      border: 1px solid t(border-color);
+    }
+    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover:not(:disabled) {
+      @include themed() {
+        border-color: t(button-primary);
+        background: rgba(t(button-primary), 0.05);
+      }
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    .loading-content {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    @include sm {
+      padding: 0.375rem 0.75rem;
+      font-size: 0.6875rem;
+    }
+  }
+}
+
+.file-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+  gap: 0.75rem;
+
+  p {
+    @include themed() {
+      color: #ef4444;
+    }
+    font-size: 0.875rem;
+    text-align: center;
+    margin: 0;
+  }
+
+  .retry-btn {
+    @include themed() {
+      background: t(button-primary);
+      color: white;
+    }
+    border: none;
+    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      @include themed() {
+        background: t(button-hover);
+      }
+    }
+  }
+}
+
+// Modal specific styles
+.file-modal-content {
+  .file-preview {
+    margin-bottom: 1.5rem;
+    border-radius: 8px;
+    overflow: hidden;
+    @include themed() {
+      border: 1px solid t(border-color);
+    }
+
+    .pdf-viewer {
+      border: none;
+      @include themed() {
+        background: t(bg-secondary);
+      }
+    }
+
+    .file-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem;
+      @include themed() {
+        background: t(bg-secondary);
+        color: t(text-secondary);
+      }
+
+      svg {
+        margin-bottom: 1rem;
+        opacity: 0.5;
+      }
+
+      p {
+        margin: 0;
+        font-size: 0.875rem;
+        opacity: 0.7;
+      }
+    }
+  }
+
+  .file-modal-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+
+    @include sm {
+      flex-direction: column;
+    }
+
+    button {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: none;
+
+      &.download-btn {
+        background: #22c55e;
+        color: white;
+
+        &:hover {
+          background: #16a34a;
+          transform: translateY(-1px);
+        }
+      }
+
+      &.open-btn {
+        @include themed() {
+          background: t(bg-secondary);
+          color: t(text-primary);
+          border: 1px solid t(border-color);
+        }
+
+        &:hover {
+          @include themed() {
+            background: t(bg-hover);
+            border-color: t(button-primary);
+          }
+        }
+      }
+
+      @include sm {
+        justify-content: center;
+      }
+    }
+  }
+}

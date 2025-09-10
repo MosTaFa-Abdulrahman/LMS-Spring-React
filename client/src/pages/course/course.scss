@@ -1,0 +1,533 @@
+@import "../../styles/responsive.scss";
+@import "../../styles/themes.scss";
+
+.course-container {
+  margin-top: 65px;
+
+  @include themed() {
+    background: t(bg-primary);
+    color: t(text-primary);
+  }
+}
+
+.course-header {
+  @include themed() {
+    background: linear-gradient(135deg, t(bg-secondary) 0%, t(bg-hover) 100%);
+  }
+
+  padding: 3rem 0;
+
+  @include sm {
+    padding: 2rem 0;
+  }
+}
+
+.course-hero {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 4rem;
+  align-items: start;
+
+  @include lg {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  @include sm {
+    padding: 0 1rem;
+  }
+}
+
+.course-info {
+  @include lg {
+    order: 2;
+  }
+}
+
+.breadcrumb {
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+
+  @include themed() {
+    color: t(text-secondary);
+  }
+
+  .separator {
+    margin: 0 0.5rem;
+    opacity: 0.7;
+  }
+}
+
+.course-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+  line-height: 1.1;
+
+  @include themed() {
+    color: t(text-primary);
+  }
+
+  @include lg {
+    font-size: 2rem;
+  }
+
+  @include sm {
+    font-size: 1.75rem;
+  }
+}
+
+.course-short-desc {
+  font-size: 1.25rem;
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+
+  @include themed() {
+    color: t(text-secondary);
+  }
+
+  @include sm {
+    font-size: 1.125rem;
+  }
+}
+
+.course-meta {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+
+  @include sm {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+}
+
+.rating {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  .rating-number {
+    font-weight: 700;
+    color: #f59e0b;
+    font-size: 1rem;
+  }
+
+  .stars {
+    display: flex;
+    gap: 2px;
+
+    .star {
+      color: #d1d5db;
+      font-size: 1rem;
+
+      &.filled {
+        color: #f59e0b;
+      }
+    }
+  }
+
+  .rating-count {
+    @include themed() {
+      color: t(text-secondary);
+    }
+    font-size: 0.875rem;
+  }
+}
+
+.students-count {
+  @include themed() {
+    color: t(text-secondary);
+  }
+  font-size: 0.875rem;
+}
+
+.course-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+
+  @include sm {
+    flex-direction: column;
+    gap: 1rem;
+  }
+}
+
+.instructor-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+
+  .created-by {
+    @include themed() {
+      color: t(text-secondary);
+    }
+    font-size: 0.875rem;
+  }
+
+  .instructor {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    .instructor-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .instructor-name {
+      @include themed() {
+        color: t(button-primary);
+      }
+      font-weight: 600;
+      text-decoration: underline;
+      cursor: pointer;
+
+      &:hover {
+        @include themed() {
+          color: t(button-hover);
+        }
+      }
+    }
+  }
+
+  @include sm {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+}
+
+.course-purchase-card {
+  @include themed() {
+    background: t(card-bg);
+    border: 1px solid t(border-color);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+      0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  }
+
+  border-radius: 12px;
+  overflow: hidden;
+  position: sticky;
+  top: 2rem;
+
+  @include lg {
+    position: static;
+    order: 1;
+  }
+
+  .course-preview {
+    position: relative;
+    aspect-ratio: 16/9;
+    overflow: hidden;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+
+    .play-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.4);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+
+      &:hover {
+        opacity: 1;
+      }
+
+      .play-btn {
+        background: rgba(255, 255, 255, 0.95);
+        border: none;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        &:hover {
+          background: white;
+          transform: scale(1.1);
+        }
+
+        svg {
+          margin-left: 2px;
+          color: #333;
+        }
+      }
+    }
+
+    &:hover {
+      img {
+        transform: scale(1.05);
+      }
+    }
+  }
+
+  .purchase-content {
+    padding: 1.5rem;
+  }
+}
+
+.course-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 3rem;
+
+  @include lg {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  @include sm {
+    padding: 1rem;
+  }
+}
+
+.content-sidebar {
+  @include lg {
+    order: -1;
+  }
+}
+
+.course-card {
+  @include themed() {
+    background: t(card-bg);
+    border: 1px solid t(border-color);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+      0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  }
+
+  border-radius: 8px;
+  overflow: hidden;
+  position: sticky;
+  top: 2rem;
+
+  @include lg {
+    position: static;
+  }
+
+  .course-card-image {
+    aspect-ratio: 16/9;
+    overflow: hidden;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  .course-card-content {
+    padding: 1.5rem;
+  }
+}
+
+.price {
+  margin-bottom: 1rem;
+
+  .free-price {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #059669;
+  }
+
+  .current-price {
+    font-size: 2rem;
+    font-weight: 700;
+    @include themed() {
+      color: t(text-primary);
+    }
+  }
+
+  .original-price {
+    font-size: 1rem;
+    text-decoration: line-through;
+    @include themed() {
+      color: t(text-secondary);
+    }
+    margin-left: 0.5rem;
+  }
+
+  .discount {
+    @include themed() {
+      background: t(bg-hover);
+      color: t(text-primary);
+    }
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    margin-left: 0.5rem;
+  }
+}
+
+.enroll-button {
+  width: 100%;
+  @include themed() {
+    background: t(button-primary);
+    color: white;
+  }
+  border: none;
+  padding: 0.875rem 1rem;
+  font-size: 1rem;
+  font-weight: 700;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-bottom: 0.5rem;
+  transition: all 0.2s ease;
+
+  &:hover {
+    @include themed() {
+      background: t(button-hover);
+    }
+    transform: translateY(-1px);
+  }
+}
+
+.money-back {
+  text-align: center;
+  font-size: 0.875rem;
+  @include themed() {
+    color: t(text-secondary);
+  }
+  margin-bottom: 1.5rem;
+}
+
+.course-includes {
+  margin-bottom: 1.5rem;
+
+  h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    @include themed() {
+      color: t(text-primary);
+    }
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+
+    li {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 0;
+      font-size: 0.875rem;
+      @include themed() {
+        color: t(text-secondary);
+      }
+
+      svg {
+        @include themed() {
+          color: t(text-secondary);
+        }
+        flex-shrink: 0;
+      }
+    }
+  }
+}
+
+.share-wishlist {
+  display: flex;
+  gap: 1rem;
+
+  button {
+    flex: 1;
+    @include themed() {
+      background: t(bg-secondary);
+      color: t(text-primary);
+      border: 1px solid t(border-color);
+    }
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      @include themed() {
+        background: t(bg-hover);
+      }
+    }
+  }
+}
+
+.main-content {
+  min-width: 0;
+}
+
+.content-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 2rem;
+  @include themed() {
+    border-bottom: 1px solid t(border-color);
+  }
+
+  .tab-button {
+    @include themed() {
+      background: none;
+      color: t(text-secondary);
+      border: none;
+      border-bottom: 2px solid transparent;
+    }
+    padding: 1rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      @include themed() {
+        color: t(text-primary);
+      }
+    }
+
+    &.active {
+      @include themed() {
+        color: t(text-primary);
+        border-bottom-color: t(button-primary);
+      }
+    }
+
+    @include sm {
+      padding: 0.75rem 1rem;
+      font-size: 0.875rem;
+    }
+  }
+}
+
+.error-message {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  font-size: 1.125rem;
+  @include themed() {
+    color: #ef4444;
+  }
+}

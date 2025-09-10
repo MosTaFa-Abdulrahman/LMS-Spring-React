@@ -1,0 +1,636 @@
+@import "../../../styles/responsive.scss";
+@import "../../../styles/themes.scss";
+
+.lms-footer {
+  position: relative;
+  overflow: hidden;
+  margin-top: auto;
+
+  @include themed() {
+    background: linear-gradient(135deg, t(bg-primary) 0%, t(bg-secondary) 100%);
+    border-top: 1px solid t(border-color);
+    color: t(text-primary);
+  }
+
+  // Back to Top Button
+  .back-to-top {
+    margin-top: 40px;
+    position: absolute;
+    top: -25px;
+    right: 40px;
+    width: 50px;
+    height: 50px;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+    @include themed() {
+      background: t(button-primary);
+      color: white;
+
+      &:hover {
+        background: t(button-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+      }
+    }
+
+    @include md() {
+      right: 20px;
+      width: 45px;
+      height: 45px;
+      top: -22px;
+    }
+
+    @include sm() {
+      right: 15px;
+      width: 40px;
+      height: 40px;
+      top: -20px;
+    }
+  }
+
+  .footer-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 60px 40px 20px;
+
+    @include xl() {
+      padding: 50px 30px 20px;
+    }
+
+    @include lg() {
+      padding: 40px 25px 20px;
+    }
+
+    @include md() {
+      padding: 35px 20px 20px;
+    }
+
+    @include sm() {
+      padding: 30px 15px 15px;
+    }
+  }
+
+  // Main Footer Content
+  .footer-content {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1.5fr;
+    gap: 50px;
+    margin-bottom: 50px;
+
+    @include xl() {
+      gap: 40px;
+      margin-bottom: 40px;
+    }
+
+    @include lg() {
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 35px;
+      margin-bottom: 35px;
+    }
+
+    @include md() {
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      margin-bottom: 30px;
+    }
+
+    @include sm() {
+      grid-template-columns: 1fr;
+      gap: 25px;
+      margin-bottom: 25px;
+    }
+  }
+
+  .footer-section {
+    animation: fadeInUp 0.6s ease-out;
+
+    &.company-info {
+      .logo-section {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
+
+        .logo-icon {
+          @include themed() {
+            color: t(button-primary);
+          }
+        }
+
+        .company-name {
+          font-size: 28px;
+          font-weight: 700;
+          margin: 0;
+
+          @include themed() {
+            color: t(text-primary);
+          }
+
+          @include sm() {
+            font-size: 24px;
+          }
+        }
+      }
+
+      .company-description {
+        font-size: 16px;
+        line-height: 1.6;
+        margin-bottom: 25px;
+
+        @include themed() {
+          color: t(text-secondary);
+        }
+
+        @include sm() {
+          font-size: 15px;
+        }
+      }
+
+      .social-links {
+        display: flex;
+        gap: 15px;
+
+        .social-link {
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          text-decoration: none;
+          transition: all 0.3s ease;
+
+          @include themed() {
+            background: t(bg-secondary);
+            color: t(text-secondary);
+            border: 1px solid t(border-color);
+
+            &:hover {
+              background: t(button-primary);
+              color: white;
+              transform: translateY(-2px);
+              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            }
+          }
+
+          @include sm() {
+            width: 36px;
+            height: 36px;
+          }
+        }
+      }
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      position: relative;
+
+      @include themed() {
+        color: t(text-primary);
+      }
+
+      &::after {
+        content: "";
+        position: absolute;
+        bottom: -8px;
+        left: 0;
+        width: 30px;
+        height: 2px;
+
+        @include themed() {
+          background: t(button-primary);
+        }
+      }
+
+      @include sm() {
+        font-size: 17px;
+        margin-bottom: 16px;
+      }
+    }
+
+    .footer-links {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+
+      li {
+        margin-bottom: 12px;
+
+        a {
+          text-decoration: none;
+          font-size: 15px;
+          transition: all 0.3s ease;
+
+          @include themed() {
+            color: t(text-secondary);
+
+            &:hover {
+              color: t(button-primary);
+              padding-left: 5px;
+            }
+          }
+        }
+
+        @include sm() {
+          margin-bottom: 10px;
+
+          a {
+            font-size: 14px;
+          }
+        }
+      }
+    }
+
+    &.contact-info {
+      .contact-items {
+        margin-bottom: 25px;
+      }
+
+      .contact-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 15px;
+        font-size: 14px;
+
+        @include themed() {
+          color: t(text-secondary);
+        }
+
+        .contact-icon {
+          margin-top: 2px;
+          flex-shrink: 0;
+
+          @include themed() {
+            color: t(button-primary);
+          }
+        }
+
+        @include sm() {
+          font-size: 13px;
+          margin-bottom: 12px;
+        }
+      }
+
+      .newsletter {
+        h5 {
+          font-size: 16px;
+          font-weight: 600;
+          margin-bottom: 15px;
+
+          @include themed() {
+            color: t(text-primary);
+          }
+
+          @include sm() {
+            font-size: 15px;
+          }
+        }
+
+        .newsletter-form {
+          display: flex;
+          gap: 8px;
+
+          @include sm() {
+            flex-direction: column;
+            gap: 10px;
+          }
+
+          .newsletter-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s ease;
+
+            @include themed() {
+              background: t(input-bg);
+              color: t(text-primary);
+              border: 1px solid t(input-border);
+
+              &:focus {
+                border-color: t(button-primary);
+                box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+              }
+
+              &::placeholder {
+                color: t(text-secondary);
+              }
+            }
+
+            @include sm() {
+              padding: 10px 12px;
+              font-size: 13px;
+            }
+          }
+
+          .newsletter-btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+
+            @include themed() {
+              background: t(button-primary);
+              color: white;
+
+              &:hover {
+                background: t(button-hover);
+                transform: translateY(-1px);
+              }
+            }
+
+            @include sm() {
+              padding: 10px 16px;
+              font-size: 13px;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Stats Section
+  .stats-section {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 30px;
+    padding: 40px 0;
+    margin-bottom: 30px;
+    border-radius: 12px;
+
+    @include themed() {
+      background: t(bg-secondary);
+      border: 1px solid t(border-color);
+    }
+
+    @include xl() {
+      padding: 35px 0;
+      gap: 25px;
+    }
+
+    @include lg() {
+      grid-template-columns: repeat(2, 1fr);
+      padding: 30px 0;
+    }
+
+    @include md() {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      padding: 25px 0;
+    }
+
+    @include sm() {
+      grid-template-columns: 1fr;
+      padding: 20px 0;
+      gap: 15px;
+    }
+
+    .stat-item {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+      padding: 20px;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+
+      @include themed() {
+        background: t(bg-primary);
+
+        &:hover {
+          background: t(bg-hover);
+          transform: translateY(-2px);
+        }
+      }
+
+      .stat-icon {
+        @include themed() {
+          color: t(button-primary);
+        }
+      }
+
+      .stat-content {
+        text-align: left;
+
+        .stat-number {
+          display: block;
+          font-size: 24px;
+          font-weight: 700;
+
+          @include themed() {
+            color: t(text-primary);
+          }
+
+          @include sm() {
+            font-size: 20px;
+          }
+        }
+
+        .stat-label {
+          font-size: 14px;
+
+          @include themed() {
+            color: t(text-secondary);
+          }
+
+          @include sm() {
+            font-size: 13px;
+          }
+        }
+      }
+
+      @include sm() {
+        padding: 15px;
+        gap: 12px;
+      }
+    }
+  }
+
+  // Bottom Bar
+  .footer-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 30px;
+    border-top: 1px solid;
+
+    @include themed() {
+      border-color: t(border-color);
+    }
+
+    @include lg() {
+      flex-direction: column;
+      gap: 20px;
+      text-align: center;
+    }
+
+    @include md() {
+      padding-top: 25px;
+    }
+
+    @include sm() {
+      padding-top: 20px;
+      gap: 15px;
+    }
+
+    .bottom-left {
+      p {
+        margin: 0;
+        font-size: 14px;
+
+        @include themed() {
+          color: t(text-secondary);
+        }
+
+        @include sm() {
+          font-size: 13px;
+        }
+      }
+    }
+
+    .bottom-right {
+      .certification-badges {
+        display: flex;
+        gap: 15px;
+
+        @include md() {
+          flex-wrap: wrap;
+          justify-content: center;
+        }
+
+        @include sm() {
+          gap: 10px;
+        }
+
+        .badge {
+          font-size: 12px;
+          padding: 6px 12px;
+          border-radius: 20px;
+          font-weight: 500;
+
+          @include themed() {
+            background: t(bg-secondary);
+            color: t(text-secondary);
+            border: 1px solid t(border-color);
+          }
+
+          @include sm() {
+            font-size: 11px;
+            padding: 4px 10px;
+          }
+        }
+      }
+    }
+  }
+
+  // Decorative Elements
+  .footer-decoration {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: hidden;
+
+    .decoration-circle {
+      position: absolute;
+      border-radius: 50%;
+      opacity: 0.05;
+
+      @include themed() {
+        background: t(button-primary);
+      }
+
+      &.decoration-1 {
+        width: 200px;
+        height: 200px;
+        top: -100px;
+        right: -100px;
+        animation: float 6s ease-in-out infinite;
+      }
+
+      &.decoration-2 {
+        width: 150px;
+        height: 150px;
+        bottom: -75px;
+        left: -75px;
+        animation: float 8s ease-in-out infinite reverse;
+      }
+
+      &.decoration-3 {
+        width: 120px;
+        height: 120px;
+        top: 40%;
+        right: 10%;
+        animation: float 10s ease-in-out infinite;
+      }
+    }
+  }
+
+  // Animations
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-20px);
+    }
+  }
+
+  // Theme-specific enhancements
+  .theme-cyber & {
+    &::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        #3b82f6 50%,
+        transparent 100%
+      );
+      animation: scan 3s linear infinite;
+    }
+  }
+
+  @keyframes scan {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+}

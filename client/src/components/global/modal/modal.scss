@@ -1,0 +1,100 @@
+@import "../../../styles/responsive.scss";
+@import "../../../styles/themes.scss";
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  margin-top: 70px;
+
+  @include sm {
+    padding: 1rem;
+  }
+}
+
+.modal-content {
+  width: 600px;
+  max-width: 90%;
+  max-height: 90vh; // ensures modal never exceeds viewport height
+  border-radius: 1rem;
+  overflow-y: auto; // scroll if content is taller
+  overflow-x: hidden;
+  animation: fadeIn 0.3s ease;
+
+  @include themed() {
+    background: t(card-bg);
+    color: t(text-primary);
+    border: 1px solid t(border-color);
+
+    // ✅ scrollbar themed
+    &::-webkit-scrollbar {
+      width: 8px;
+    }
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    &::-webkit-scrollbar-thumb {
+      border-radius: 4px;
+      background: t(border-color);
+    }
+  }
+
+  @include sm {
+    width: 100%;
+  }
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+
+  @include themed() {
+    background: t(header-bg);
+    color: t(header-text);
+    border-bottom: 1px solid t(border-color);
+  }
+
+  h2 {
+    font-size: 1.25rem;
+    margin: 0;
+  }
+
+  .modal-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: inherit;
+    transition: transform 0.2s ease;
+
+    &:hover {
+      transform: rotate(90deg);
+    }
+  }
+}
+
+.modal-body {
+  padding: 1.25rem;
+  font-size: 1rem;
+
+  @include themed() {
+    color: t(text-secondary);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

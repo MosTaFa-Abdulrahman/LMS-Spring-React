@@ -1,0 +1,128 @@
+@import "../../../styles/responsive.scss";
+@import "../../../styles/themes.scss";
+
+.delete-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+
+  @include sm {
+    padding: 1rem;
+  }
+}
+
+.delete-modal-content {
+  width: 500px;
+  max-width: 90%;
+  border-radius: 1rem;
+  overflow: hidden;
+  animation: fadeIn 0.3s ease;
+
+  @include themed() {
+    background: t(card-bg);
+    color: t(text-primary);
+    border: 1px solid t(border-color);
+  }
+
+  @include sm {
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+}
+
+.delete-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+
+  @include themed() {
+    background: t(header-bg);
+    color: t(header-text);
+    border-bottom: 1px solid t(border-color);
+  }
+
+  h2 {
+    font-size: 1.25rem;
+    margin: 0;
+  }
+
+  .modal-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: inherit;
+    transition: transform 0.2s ease;
+
+    &:hover {
+      transform: rotate(90deg);
+    }
+  }
+}
+
+.delete-modal-body {
+  padding: 1.25rem;
+  font-size: 1rem;
+
+  @include themed() {
+    color: t(text-secondary);
+  }
+}
+
+.delete-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding: 1rem;
+  border-top: 1px solid;
+
+  @include themed() {
+    border-color: t(border-color);
+  }
+
+  .btn {
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+
+    &.cancel {
+      @include themed() {
+        background: t(button-secondary-bg);
+        color: t(button-secondary-text);
+      }
+      &:hover {
+        opacity: 0.9;
+      }
+    }
+
+    &.delete {
+      @include themed() {
+        background: t(danger-bg);
+        color: t(danger-text);
+      }
+      &:hover {
+        opacity: 0.9;
+      }
+    }
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

@@ -1,0 +1,88 @@
+// Theme Variables
+$themes: (
+  theme-light: (
+    bg-primary: #ffffff,
+    bg-secondary: #f5f7fa,
+    bg-hover: #e9edf2,
+    bg-active: #dbe2eb,
+    bg-submenu: #f0f3f8,
+    bg-submenu-hover: #e0e6ef,
+    border-color: #cfd8e3,
+    text-primary: #1a1a1a,
+    text-secondary: #4b5563,
+    header-bg: #f9fafb,
+    header-text: #1a1a1a,
+    card-bg: #ffffff,
+    input-bg: #f5f7fa,
+    input-border: #cfd8e3,
+    button-primary: #2563eb,
+    button-hover: #1d4ed8,
+  ),
+
+  theme-dark: (
+    bg-primary: #0d0d0d,
+    bg-secondary: #1a1a1a,
+    bg-hover: #222222,
+    bg-active: #333333,
+    bg-submenu: #1a1a1a,
+    bg-submenu-hover: #2a2a2a,
+    border-color: #444444,
+    text-primary: #f5f5f5,
+    text-secondary: #d1d5db,
+    header-bg: #000000,
+    header-text: #ffffff,
+    card-bg: #1e1e1e,
+    input-bg: #151515,
+    input-border: #333333,
+    button-primary: #444444,
+    button-hover: #666666,
+  ),
+
+  theme-cyber: (
+    bg-primary: #0f172a,
+    // deep navy
+    bg-secondary: #1e293b,
+    // slate
+    bg-hover: #1d4ed8,
+    // neon blue hover
+    bg-active: #3b82f6,
+    // active blue
+    bg-submenu: #1e293b,
+    bg-submenu-hover: #2563eb,
+    border-color: #3b82f6,
+    text-primary: #e2e8f0,
+    // light gray
+    text-secondary: #94a3b8,
+    // muted gray
+    header-bg: #0f172a,
+    header-text: #3b82f6,
+    card-bg: #1e293b,
+    input-bg: #111827,
+    input-border: #3b82f6,
+    button-primary: #3b82f6,
+    button-hover: #60a5fa,
+  ),
+);
+
+// Theme Mixins
+@mixin themed() {
+  @each $theme, $map in $themes {
+    .#{$theme} & {
+      $theme-map: () !global;
+      @each $key, $value in $map {
+        $theme-map: map-merge(
+          $theme-map,
+          (
+            $key: $value,
+          )
+        ) !global;
+      }
+      @content;
+      $theme-map: null !global;
+    }
+  }
+}
+
+@function t($key) {
+  @return map-get($theme-map, $key);
+}
