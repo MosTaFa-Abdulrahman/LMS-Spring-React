@@ -77,7 +77,7 @@ public class SecurityConfig {
                             .hasAnyRole("ADMIN", "INSTRUCTOR")
                             .requestMatchers(HttpMethod.DELETE, "/api/courses/{courseId}")
                             .hasAnyRole("ADMIN", "INSTRUCTOR")
-                            .requestMatchers(HttpMethod.GET, "/api/courses").authenticated()
+                            .requestMatchers(HttpMethod.GET, "/api/courses").permitAll()
                             .requestMatchers(HttpMethod.GET, "/api/courses/search").authenticated()
                             .requestMatchers(HttpMethod.GET, "/api/courses/{courseId}").authenticated()
                             // Create Course Transactional
@@ -161,8 +161,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("https://lms-xi-six.vercel.app",
-                "http://localhost:5173", "http://localhost:3000"));
+        configuration.setAllowedOrigins(List.of("https://lms-xi-six.vercel.app", "http://localhost:5173"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
