@@ -179,7 +179,7 @@ export default function Landing() {
                 }`}
               >
                 <img
-                  src="https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=600&h=400&fit=crop"
+                  src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTV8fGJlYXV0eSUyMHdvbWFufGVufDB8fDB8fHww"
                   alt="Students learning"
                   className="main-image"
                 />

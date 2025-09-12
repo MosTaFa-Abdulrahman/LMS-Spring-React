@@ -69,6 +69,81 @@
       }
     }
 
+    .header-actions {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+
+      @include md {
+        width: 100%;
+        justify-content: flex-start;
+      }
+
+      @include sm {
+        flex-direction: column;
+        gap: 0.75rem;
+        width: 100%;
+      }
+    }
+
+    .filter-toggle-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.25rem;
+      border: 2px solid transparent;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+
+      @include themed() {
+        background-color: t(card-bg);
+        color: t(text-primary);
+        border-color: t(border-color);
+      }
+
+      &:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+
+        @include themed() {
+          border-color: t(button-primary);
+        }
+      }
+
+      &.active {
+        @include themed() {
+          background: linear-gradient(
+            135deg,
+            t(button-primary),
+            t(button-hover)
+          );
+          color: white;
+          border-color: t(button-primary);
+        }
+      }
+
+      .filter-indicator {
+        position: absolute;
+        top: -4px;
+        right: -4px;
+        width: 10px;
+        height: 10px;
+        background: #ef4444;
+        border-radius: 50%;
+        border: 2px solid white;
+        animation: pulse 2s infinite;
+      }
+
+      @include sm {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+
     .create-btn {
       display: flex;
       align-items: center;
@@ -124,9 +199,228 @@
         transform: none;
       }
 
-      @include md {
+      @include sm {
         width: 100%;
         justify-content: center;
+      }
+    }
+  }
+
+  // Filters Panel
+  .filters-panel {
+    margin-bottom: 2rem;
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.4s ease;
+    max-height: 0;
+    opacity: 0;
+
+    @include themed() {
+      background-color: t(card-bg);
+      border: 1px solid t(border-color);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    &.open {
+      max-height: 500px;
+      opacity: 1;
+      margin-bottom: 2rem;
+    }
+
+    .filters-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.5rem;
+      border-bottom: 1px solid;
+
+      @include themed() {
+        border-bottom-color: t(border-color);
+        background: linear-gradient(135deg, t(bg-secondary), t(bg-hover));
+      }
+
+      h3 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin: 0;
+
+        @include themed() {
+          color: t(text-primary);
+        }
+      }
+
+      .filters-actions {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+
+        .clear-filters-btn {
+          display: flex;
+          align-items: center;
+          gap: 0.25rem;
+          padding: 0.5rem 0.75rem;
+          border: 1px solid;
+          border-radius: 8px;
+          font-size: 0.9rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s ease;
+
+          @include themed() {
+            background: transparent;
+            color: t(text-secondary);
+            border-color: t(border-color);
+          }
+
+          &:hover {
+            @include themed() {
+              background-color: t(bg-hover);
+              color: t(text-primary);
+            }
+          }
+        }
+
+        .close-filters-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 0.5rem;
+          border: none;
+          border-radius: 8px;
+          cursor: pointer;
+          transition: all 0.3s ease;
+
+          @include themed() {
+            background: transparent;
+            color: t(text-secondary);
+          }
+
+          &:hover {
+            @include themed() {
+              background-color: t(bg-hover);
+              color: t(text-primary);
+            }
+          }
+        }
+      }
+    }
+
+    .filters-content {
+      padding: 1.5rem;
+
+      .filter-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.25rem;
+        margin-bottom: 1.25rem;
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+
+        @include sm {
+          grid-template-columns: 1fr;
+          gap: 1rem;
+        }
+      }
+
+      .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+
+        label {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          font-size: 0.9rem;
+          font-weight: 600;
+
+          @include themed() {
+            color: t(text-secondary);
+          }
+
+          svg {
+            width: 16px;
+            height: 16px;
+          }
+        }
+
+        select,
+        input {
+          padding: 0.75rem;
+          border: 2px solid transparent;
+          border-radius: 8px;
+          font-size: 0.9rem;
+          transition: all 0.3s ease;
+
+          @include themed() {
+            background-color: t(input-bg);
+            color: t(text-primary);
+            border-color: t(input-border);
+          }
+
+          &:focus {
+            outline: none;
+
+            @include themed() {
+              border-color: t(button-primary);
+              box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            }
+          }
+
+          &:hover {
+            @include themed() {
+              border-color: t(button-primary);
+            }
+          }
+        }
+
+        select {
+          cursor: pointer;
+
+          option {
+            @include themed() {
+              background-color: t(card-bg);
+              color: t(text-primary);
+            }
+          }
+        }
+
+        input[type="datetime-local"] {
+          &::-webkit-calendar-picker-indicator {
+            @include themed() {
+              filter: t(calendar-filter);
+            }
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+
+            &:hover {
+              background-color: rgba(59, 130, 246, 0.1);
+            }
+          }
+        }
+      }
+    }
+
+    .filter-results {
+      padding: 1rem 1.5rem;
+      border-top: 1px solid;
+
+      @include themed() {
+        border-top-color: t(border-color);
+        background: linear-gradient(135deg, t(bg-secondary), t(bg-hover));
+      }
+
+      .results-count {
+        font-size: 0.9rem;
+        font-weight: 600;
+
+        @include themed() {
+          color: t(text-secondary);
+        }
       }
     }
   }
@@ -222,7 +516,8 @@
       }
     }
 
-    .create-btn {
+    .create-btn,
+    .clear-filters-btn {
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
@@ -242,6 +537,17 @@
       &:hover {
         transform: translateY(-2px);
         box-shadow: 0 8px 25px rgba(37, 99, 235, 0.25);
+      }
+    }
+
+    .clear-filters-btn {
+      @include themed() {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+      }
+
+      &:hover {
+        box-shadow: 0 8px 25px rgba(239, 68, 68, 0.25);
       }
     }
   }
@@ -780,6 +1086,21 @@
   }
 }
 
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
 // Apply animations to grid items
 .quizzes-grid .quiz-card {
   animation: slideInUp 0.6s ease-out;
@@ -792,11 +1113,32 @@
   }
 }
 
+// Filter panel animation
+.filters-panel {
+  &.open {
+    animation: slideDown 0.4s ease-out;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    max-height: 0;
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    max-height: 500px;
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 // Focus states for accessibility
 .quizzes-page {
   button:focus-visible,
   input:focus-visible,
-  textarea:focus-visible {
+  textarea:focus-visible,
+  select:focus-visible {
     outline: 2px solid;
     outline-offset: 2px;
 
@@ -813,7 +1155,13 @@
       border-width: 2px;
     }
 
-    .action-btn {
+    .action-btn,
+    .filter-toggle-btn,
+    .create-btn {
+      border-width: 2px;
+    }
+
+    .filters-panel {
       border-width: 2px;
     }
   }
@@ -826,6 +1174,40 @@
       animation-duration: 0.01ms !important;
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
+    }
+
+    .filters-panel {
+      transition: none !important;
+
+      &.open {
+        animation: none !important;
+      }
+    }
+  }
+}
+
+// Dark theme specific adjustments
+.theme-dark {
+  .filters-panel {
+    input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+      filter: invert(1);
+    }
+  }
+}
+
+// Cyber theme specific adjustments
+.theme-cyber {
+  .quizzes-page {
+    .filter-toggle-btn {
+      &.active {
+        background: linear-gradient(135deg, #00d4ff, #0099cc);
+        border-color: #00d4ff;
+      }
+    }
+
+    .filters-panel {
+      border-color: rgba(0, 212, 255, 0.3);
+      box-shadow: 0 4px 20px rgba(0, 212, 255, 0.1);
     }
   }
 }

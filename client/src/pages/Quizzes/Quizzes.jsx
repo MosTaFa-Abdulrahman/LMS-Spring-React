@@ -1,5 +1,5 @@
 import "./quizzes.scss";
-import { useContext, useState } from "react";
+import { useContext, useState, useMemo } from "react";
 import {
   Plus,
   Edit2,
@@ -7,6 +7,11 @@ import {
   Play,
   ChevronLeft,
   ChevronRight,
+  Filter,
+  X,
+  Calendar,
+  User,
+  GraduationCap,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -31,7 +36,7 @@ function Quizzes() {
   const currentUser = userData?.userInfo;
   const navigate = useNavigate();
 
-  // Permmison
+  // Permission
   const hasPermmison =
     currentUser.role === "ADMIN" || currentUser.role === "INSTRUCTOR";
 
@@ -42,19 +47,130 @@ function Quizzes() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(10);
 
-  // RTKQ Hooks
+  // Filter States
+  const [filters, setFilters] = useState({
+    courseLevel: "",
+    instructorName: "",
+    startDate: "",
+    endDate: "",
+  });
+  const [showFilters, setShowFilters] = useState(false);
+
+  // RTKQ Hooks - Get more data to handle client-side filtering and pagination properly
   const {
     data: quizzesData,
     isLoading: isLoadingQuizzes,
     error: quizzesError,
     refetch: refetchQuizzes,
-  } = useGetQuizzesQuery({ page: currentPage, size: pageSize });
+  } = useGetQuizzesQuery({ page: 1, size: 100 }); // Get more items for better filtering
 
   const [createQuiz, { isLoading: isCreating }] = useCreateQuizMutation();
   const [updateQuiz, { isLoading: isUpdating }] = useUpdateQuizMutation();
   const [deleteQuiz, { isLoading: isDeleting }] = useDeleteQuizMutation();
 
-  // Handlers
+  // Get all quizzes from API
+  const allQuizzes = quizzesData?.data?.content || [];
+
+  // Get unique course levels and instructors for filter dropdowns
+  const uniqueCourseLevels = useMemo(() => {
+    const levels = [...new Set(allQuizzes.map((quiz) => quiz.courseLevel))];
+    return levels.filter((level) => level).sort();
+  }, [allQuizzes]);
+
+  const uniqueInstructors = useMemo(() => {
+    const instructors = [
+      ...new Set(
+        allQuizzes.map((quiz) => `${quiz.userFirstName} ${quiz.userLastName}`)
+      ),
+    ];
+    return instructors.filter((instructor) => instructor.trim()).sort();
+  }, [allQuizzes]);
+
+  // Filter quizzes based on current filters
+  const filteredQuizzes = useMemo(() => {
+    let filtered = [...allQuizzes];
+
+    // Filter by course level
+    if (filters.courseLevel) {
+      filtered = filtered.filter((quiz) =>
+        quiz.courseLevel
+          ?.toLowerCase()
+          .includes(filters.courseLevel.toLowerCase())
+      );
+    }
+
+    // Filter by instructor name
+    if (filters.instructorName) {
+      filtered = filtered.filter((quiz) => {
+        const fullName =
+          `${quiz.userFirstName} ${quiz.userLastName}`.toLowerCase();
+        return fullName.includes(filters.instructorName.toLowerCase());
+      });
+    }
+
+    // Filter by start date
+    if (filters.startDate) {
+      filtered = filtered.filter((quiz) => {
+        const quizStartDate = new Date(quiz.startTime);
+        const filterStartDate = new Date(filters.startDate);
+        return quizStartDate >= filterStartDate;
+      });
+    }
+
+    // Filter by end date
+    if (filters.endDate) {
+      filtered = filtered.filter((quiz) => {
+        const quizEndDate = new Date(quiz.endTime);
+        const filterEndDate = new Date(filters.endDate);
+        return quizEndDate <= filterEndDate;
+      });
+    }
+
+    return filtered;
+  }, [allQuizzes, filters]);
+
+  // Calculate pagination data for filtered results
+  const paginationData = useMemo(() => {
+    const totalItems = filteredQuizzes.length;
+    const totalPages = Math.ceil(totalItems / pageSize);
+
+    return {
+      currentPage,
+      totalPages,
+      totalItems,
+      hasPrevious: currentPage > 1,
+      hasNext: currentPage < totalPages,
+    };
+  }, [filteredQuizzes.length, currentPage, pageSize]);
+
+  // Paginate filtered results
+  const paginatedQuizzes = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+    return filteredQuizzes.slice(startIndex, startIndex + pageSize);
+  }, [filteredQuizzes, currentPage, pageSize]);
+
+  // Filter Handlers
+  const handleFilterChange = (filterKey, value) => {
+    setFilters((prev) => ({
+      ...prev,
+      [filterKey]: value,
+    }));
+    setCurrentPage(1); // Reset to first page when filters change
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      courseLevel: "",
+      instructorName: "",
+      startDate: "",
+      endDate: "",
+    });
+    setCurrentPage(1);
+  };
+
+  const hasActiveFilters = Object.values(filters).some((filter) => filter);
+
+  // Existing Handlers
   const handleCreateQuiz = async (quizData) => {
     try {
       await createQuiz(quizData).unwrap();
@@ -104,7 +220,9 @@ function Quizzes() {
   };
 
   const handlePageChange = (page) => {
-    setCurrentPage(page);
+    if (page >= 1 && page <= paginationData.totalPages) {
+      setCurrentPage(page);
+    }
   };
 
   // Format date
@@ -118,6 +236,12 @@ function Quizzes() {
     });
   };
 
+  // Format date for input
+  const formatDateForInput = (dateString) => {
+    if (!dateString) return "";
+    return new Date(dateString).toISOString().slice(0, 16);
+  };
+
   // Loading state
   if (isLoadingQuizzes) {
     return (
@@ -126,6 +250,8 @@ function Quizzes() {
       </div>
     );
   }
+
+  console.log(paginationData);
 
   // Error state
   if (quizzesError) {
@@ -142,9 +268,6 @@ function Quizzes() {
     );
   }
 
-  const quizzes = quizzesData?.data?.content || [];
-  const paginationData = quizzesData?.data || {};
-
   return (
     <div className="quizzes-page">
       {/* Header */}
@@ -153,35 +276,168 @@ function Quizzes() {
           <h1>Quiz Management</h1>
           <p>Manage all quizzes for your courses</p>
         </div>
-        {hasPermmison && (
+        <div className="header-actions">
           <button
-            className="create-btn"
-            onClick={() => setIsCreateModalOpen(true)}
-            disabled={isCreating}
+            className={`filter-toggle-btn ${showFilters ? "active" : ""}`}
+            onClick={() => setShowFilters(!showFilters)}
           >
-            <Plus size={20} />
-            Create New Quiz
+            <Filter size={20} />
+            Filters
+            {hasActiveFilters && <span className="filter-indicator" />}
           </button>
-        )}
+          {hasPermmison && (
+            <button
+              className="create-btn"
+              onClick={() => setIsCreateModalOpen(true)}
+              disabled={isCreating}
+            >
+              <Plus size={20} />
+              Create New Quiz
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Filters Panel */}
+      <div className={`filters-panel ${showFilters ? "open" : ""}`}>
+        <div className="filters-header">
+          <h3>Filter Quizzes</h3>
+          <div className="filters-actions">
+            {hasActiveFilters && (
+              <button className="clear-filters-btn" onClick={clearFilters}>
+                <X size={16} />
+                Clear All
+              </button>
+            )}
+            <button
+              className="close-filters-btn"
+              onClick={() => setShowFilters(false)}
+            >
+              <X size={18} />
+            </button>
+          </div>
+        </div>
+
+        <div className="filters-content">
+          <div className="filter-row">
+            {/* Course Level Filter */}
+            <div className="filter-group">
+              <label htmlFor="courseLevel">
+                <GraduationCap size={16} />
+                Course Level
+              </label>
+              <select
+                id="courseLevel"
+                value={filters.courseLevel}
+                onChange={(e) =>
+                  handleFilterChange("courseLevel", e.target.value)
+                }
+              >
+                <option value="">All Levels</option>
+                {uniqueCourseLevels.map((level) => (
+                  <option key={level} value={level}>
+                    {level}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Instructor Filter */}
+            <div className="filter-group">
+              <label htmlFor="instructorName">
+                <User size={16} />
+                Instructor
+              </label>
+              <select
+                id="instructorName"
+                value={filters.instructorName}
+                onChange={(e) =>
+                  handleFilterChange("instructorName", e.target.value)
+                }
+              >
+                <option value="">All Instructors</option>
+                {uniqueInstructors.map((instructor) => (
+                  <option key={instructor} value={instructor}>
+                    {instructor}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="filter-row">
+            {/* Start Date Filter */}
+            <div className="filter-group">
+              <label htmlFor="startDate">
+                <Calendar size={16} />
+                Start Date From
+              </label>
+              <input
+                type="datetime-local"
+                id="startDate"
+                value={formatDateForInput(filters.startDate)}
+                onChange={(e) =>
+                  handleFilterChange("startDate", e.target.value)
+                }
+              />
+            </div>
+
+            {/* End Date Filter */}
+            <div className="filter-group">
+              <label htmlFor="endDate">
+                <Calendar size={16} />
+                End Date Until
+              </label>
+              <input
+                type="datetime-local"
+                id="endDate"
+                value={formatDateForInput(filters.endDate)}
+                onChange={(e) => handleFilterChange("endDate", e.target.value)}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Results Summary */}
+        <div className="filter-results">
+          <span className="results-count">
+            Showing {filteredQuizzes.length} of {allQuizzes.length} quizzes
+          </span>
+        </div>
       </div>
 
       {/* Quizzes Grid */}
       <div className="quizzes-grid">
-        {quizzes?.length === 0 ? (
+        {paginatedQuizzes?.length === 0 ? (
           <div className="empty-state">
             <div className="empty-icon">📝</div>
-            <h3>No quizzes found</h3>
-            <p>Create your first quiz to get started</p>
-            <button
-              className="create-btn"
-              onClick={() => setIsCreateModalOpen(true)}
-            >
-              <Plus size={20} />
-              Create Quiz
-            </button>
+            {hasActiveFilters ? (
+              <>
+                <h3>No quizzes match your filters</h3>
+                <p>Try adjusting your filter criteria</p>
+                <button className="clear-filters-btn" onClick={clearFilters}>
+                  <X size={20} />
+                  Clear Filters
+                </button>
+              </>
+            ) : (
+              <>
+                <h3>No quizzes found</h3>
+                <p>Create your first quiz to get started</p>
+                {hasPermmison && (
+                  <button
+                    className="create-btn"
+                    onClick={() => setIsCreateModalOpen(true)}
+                  >
+                    <Plus size={20} />
+                    Create Quiz
+                  </button>
+                )}
+              </>
+            )}
           </div>
         ) : (
-          quizzes?.map((quiz) => (
+          paginatedQuizzes?.map((quiz) => (
             <div key={quiz.id} className="quiz-card">
               {/* Course Image */}
               <div className="quiz-image">
@@ -209,15 +465,6 @@ function Quizzes() {
                     <span className="label">End:</span>
                     <span className="value">{formatDate(quiz.endTime)}</span>
                   </div>
-                </div>
-
-                {/* Status */}
-                <div
-                  className={`quiz-status ${
-                    quiz.isCompleted ? "completed" : "active"
-                  }`}
-                >
-                  {quiz.isCompleted ? "Completed" : "Active"}
                 </div>
               </div>
 
@@ -256,7 +503,7 @@ function Quizzes() {
         )}
       </div>
 
-      {/* Pagination */}
+      {/* Pagination - Show when there are multiple pages */}
       {paginationData.totalPages > 1 && (
         <div className="pagination">
           <button

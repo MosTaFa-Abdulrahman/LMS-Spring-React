@@ -154,13 +154,12 @@ function Courses() {
     };
   }, []);
 
-  if (isLoading && currentPage === 1) {
+  if (isLoading && currentPage === 1)
     return (
-      <div className="courses-loading">
-        <Spinner />
+      <div style={{ marginTop: "20%" }}>
+        <Spinner size={40} text="Loading Courses..." />
       </div>
     );
-  }
 
   return (
     <div className="courses-container">

@@ -18,7 +18,12 @@ function Course() {
     error: courseError,
   } = useGetCourseByIdQuery(id);
 
-  if (courseLoading) return <Spinner size={40} text="Loading Course..." />;
+  if (courseLoading)
+    return (
+      <div style={{ marginTop: "20%" }}>
+        <Spinner size={40} text="Loading Course..." />
+      </div>
+    );
   if (courseError)
     return <div className="error-message">Error loading course</div>;
   if (!course) return <div className="error-message">Course not found</div>;

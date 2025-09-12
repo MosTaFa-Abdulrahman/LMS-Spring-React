@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Size;
 
 public record CreateVideoTransaction(
         @NotBlank(message = "Video title is required")
-        @Size(min = 3, max = 200, message = "Video title must be between 3 and 200 characters")
+        @Size(min = 3, max = 1500, message = "Video title must be between 3 and 1500 characters")
         String title,
 
         @NotBlank(message = "Video URL is required")

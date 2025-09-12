@@ -13,13 +13,13 @@ import java.util.List;
 public record CreateCourseTransaction(
         // Course fields
         @NotBlank(message = "Course title is required")
-        @Size(min = 3, max = 200, message = "Course title must be between 3 and 200 characters")
+        @Size(min = 3, max = 1500, message = "Course title must be between 3 and 1500 characters")
         String title,
 
-        @Size(max = 2000, message = "Description cannot exceed 2000 characters")
+        @Size(max = 9000, message = "Description cannot exceed 9000 characters")
         String description,
 
-        @Size(max = 500, message = "Short description cannot exceed 500 characters")
+        @Size(max = 3000, message = "Short description cannot exceed 3000 characters")
         String shortDescription,
 
         @URL(message = "Course image must be a valid URL")

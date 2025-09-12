@@ -10,10 +10,10 @@ import java.util.List;
 
 public record CreateSectionTransaction(
         @NotBlank(message = "Section title is required")
-        @Size(min = 3, max = 200, message = "Section title must be between 3 and 200 characters")
+        @Size(min = 3, max = 1200, message = "Section title must be between 3 and 1200 characters")
         String title,
 
-        @Size(max = 2000, message = "Description cannot exceed 2000 characters")
+        @Size(max = 3000, message = "Description cannot exceed 3000 characters")
         String description,
 
         @NotNull(message = "Section price is required")

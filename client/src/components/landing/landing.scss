@@ -418,13 +418,31 @@
   }
 
   .main-image {
-    width: 100%;
-    height: auto;
+    // width: 100%;
+    // height: auto;
     border-radius: 24px;
     transition: transform 0.3s ease;
+    width: 600px;
+    height: 600px;
+    object-fit: cover;
 
     &:hover {
       transform: scale(1.05);
+    }
+
+    @include lg {
+      margin-top: 80px;
+    }
+    @include md {
+      margin-top: 20px;
+      margin-right: 100px;
+      width: 400px;
+      height: 400px;
+    }
+    @include sm {
+      margin-top: 0;
+      width: 300px;
+      height: 300px;
     }
   }
 }
