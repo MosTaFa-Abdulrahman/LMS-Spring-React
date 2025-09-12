@@ -67,4 +67,8 @@ public class Course extends BaseEntity<UUID> {
     @OneToMany(mappedBy = "course", fetch = FetchType.LAZY,
             cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Progress> progressList;
+
+    @OneToMany(mappedBy = "course", fetch = FetchType.LAZY,
+            cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Quiz> quizzes;
 }

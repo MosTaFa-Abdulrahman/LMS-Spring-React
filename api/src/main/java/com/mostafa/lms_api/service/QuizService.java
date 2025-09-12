@@ -1,12 +1,10 @@
 package com.mostafa.lms_api.service;
 
-
-import com.mostafa.lms_api.dto.choice.UpdateChoiceDTO;
-import com.mostafa.lms_api.dto.question.CreateQuestionDTO;
-import com.mostafa.lms_api.dto.question.UpdateQuestionDTO;
-import com.mostafa.lms_api.dto.quiz.CreateQuizDTO;
-import com.mostafa.lms_api.dto.quiz.QuizResponseDTO;
-import com.mostafa.lms_api.dto.quiz.UpdateQuizDTO;
+import com.mostafa.lms_api.dto.quiz.create.CreateQuizDTO;
+import com.mostafa.lms_api.dto.quiz.get.QuizAttemptResponseDTO;
+import com.mostafa.lms_api.dto.quiz.get.QuizResponseDTO;
+import com.mostafa.lms_api.dto.quiz.get.QuizSummaryResponseDTO;
+import com.mostafa.lms_api.dto.quiz.update.UpdateQuizDTO;
 import com.mostafa.lms_api.global.CustomResponseException;
 import com.mostafa.lms_api.mapper.EntityDtoMapper;
 import com.mostafa.lms_api.model.*;
@@ -19,6 +17,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -29,274 +29,290 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class QuizService {
     private final QuizRepo quizRepo;
-    private final QuestionRepo questionRepo;
-    private final ChoiceRepo choiceRepo;
-    private final CurrentUser currentUser;
-    private final UserRepo userRepo;
+    private final QuizAttemptRepo quizAttemptRepo;
+    private final UserAnswerRepo userAnswerRepo;
     private final CourseRepo courseRepo;
+    private final UserRepo userRepo;
+    private final CurrentUser currentUser;
     private final EntityDtoMapper mapper;
 
 
-    //  Helper Update Quiz Questions
-    private void updateQuizQuestions(Quiz quiz, Map<UUID, UpdateQuestionDTO> questionUpdates) {
-        for (Map.Entry<UUID, UpdateQuestionDTO> entry : questionUpdates.entrySet()) {
-            UUID questionId = entry.getKey();
-            UpdateQuestionDTO updateDTO = entry.getValue();
-
-            Question question = questionRepo.findById(questionId)
-                    .orElseThrow(() -> CustomResponseException.ResourceNotFound("Question not found"));
-
-            // Verify question belongs to this quiz
-            if (!question.getQuiz().getId().equals(quiz.getId())) {
-                throw CustomResponseException.BadRequest("Question does not belong to this quiz");
-            }
-
-            // Update question fields
-            if (updateDTO.text() != null) question.setText(updateDTO.text());
-            if (updateDTO.questionImage() != null) question.setQuestionImage(updateDTO.questionImage());
-            if (updateDTO.points() != null) question.setPoints(updateDTO.points());
-
-            // Update choices if provided
-            if (updateDTO.choices() != null && !updateDTO.choices().isEmpty()) {
-                updateQuestionChoices(question, updateDTO.choices());
-            }
-
-            questionRepo.save(question);
-        }
-
-        // Recalculate total score
-        Double totalScore = quiz.getQuestions().stream()
-                .mapToDouble(Question::getPoints).sum();
-        quiz.setTotalScore(totalScore);
-    }
-
-    // Helper method for updating choices
-    private void updateQuestionChoices(Question question, Map<UUID, UpdateChoiceDTO> choiceUpdates) {
-        for (Map.Entry<UUID, UpdateChoiceDTO> entry : choiceUpdates.entrySet()) {
-            UUID choiceId = entry.getKey();
-            UpdateChoiceDTO updateDTO = entry.getValue();
-
-            Choice choice = choiceRepo.findById(choiceId)
-                    .orElseThrow(() -> CustomResponseException.ResourceNotFound("Choice not found"));
-
-            // Verify choice belongs to this question
-            if (!choice.getQuestion().getId().equals(question.getId())) {
-                throw CustomResponseException.BadRequest("Choice does not belong to this question");
-            }
-
-            // Update choice fields
-            if (updateDTO.choiceText() != null) choice.setChoiceText(updateDTO.choiceText());
-            if (updateDTO.choiceLabel() != null) choice.setChoiceLabel(updateDTO.choiceLabel());
-            if (updateDTO.isCorrect() != null) choice.setIsCorrect(updateDTO.isCorrect());
-
-            choiceRepo.save(choice);
-        }
-
-        // Validate that exactly one choice is marked as correct
-        long correctChoicesCount = question.getChoices().stream()
-                .filter(Choice::getIsCorrect)
-                .count();
-
-        if (correctChoicesCount != 1) {
-            throw CustomResponseException.BadRequest("Question must have exactly one correct answer");
-        }
-    }
-
-
-    // Create
+    // ====================== CREATE QUIZ ======================
     @Transactional
-    public QuizResponseDTO createQuiz(CreateQuizDTO dto) {
-        User user = currentUser.getCurrentUser();
-        Course course = courseRepo.findById(dto.courseId())
-                .orElseThrow(() -> CustomResponseException.ResourceNotFound("Course not found"));
+    public QuizResponseDTO createQuiz(CreateQuizDTO createQuizDTO) {
+        // Validate time constraints
+        validateQuizTimes(createQuizDTO.startTime(), createQuizDTO.endTime());
 
-        if (dto.endTime().isBefore(dto.startTime())) {
-            throw CustomResponseException.BadRequest("End time must be after start time");
-        }
+        // Get course and validate ownership
+        Course course = courseRepo.findById(createQuizDTO.courseId())
+                .orElseThrow(() -> CustomResponseException.ResourceNotFound("Course not found with ID: " + createQuizDTO.courseId()));
 
-        // Validate that all questions have exactly one correct answer
-        for (CreateQuestionDTO questionDTO : dto.questions()) {
-            if (!questionDTO.hasExactlyOneCorrectAnswer()) {
-                throw CustomResponseException.BadRequest("Each question must have exactly one correct answer");
-            }
-        }
+        User authUser = currentUser.getCurrentUser();
 
-        // Create quiz
-        Quiz quiz = mapper.toQuizEntity(dto, user, course);
+        // Validate questions have at least one correct answer
+        validateQuestions(createQuizDTO.questions());
+
+        // Create and save quiz
+        Quiz quiz = mapper.toQuizEntity(createQuizDTO, course, authUser);
         Quiz savedQuiz = quizRepo.save(quiz);
 
-        // Create questions with choices
-        List<Question> questions = dto.questions().stream()
-                .map(q -> mapper.toQuestionEntity(q, savedQuiz))
-                .collect(Collectors.toList());
-
-        questionRepo.saveAll(questions);
-
-        // Calculate total score
-        Double totalScore = questions.stream().mapToDouble(Question::getPoints).sum();
-        savedQuiz.setTotalScore(totalScore);
-        savedQuiz.setQuestions(questions);
-
-        return mapper.toQuizResponseDTO(quizRepo.save(savedQuiz));
+        return mapper.toQuizResponseDTO(savedQuiz, false);
     }
 
-    // Update
+    // ====================== UPDATE QUIZ ======================
     @Transactional
-    public QuizResponseDTO updateQuiz(UUID quizId, UpdateQuizDTO dto) {
-        Quiz quiz = quizRepo.findById(quizId)
-                .orElseThrow(() -> CustomResponseException.ResourceNotFound("Quiz not found"));
+    public QuizResponseDTO updateQuiz(UpdateQuizDTO updateQuizDTO) {
 
-        if (!quiz.getUser().getId().equals(currentUser.getCurrentUser().getId())) {
-            throw CustomResponseException.BadRequest("Not authorized");
-        }
-        if (quiz.hasStarted()) {
-            throw CustomResponseException.BadRequest("Cannot update started quiz");
-        }
+        // Get existing quiz and validate ownership
+        Quiz existingQuiz = quizRepo.findById(updateQuizDTO.id())
+                .orElseThrow(() -> CustomResponseException.ResourceNotFound("Quiz not found with ID: " + updateQuizDTO.id()));
 
-        // Update quiz metadata
-        if (dto.title() != null) quiz.setTitle(dto.title());
-        if (dto.description() != null) quiz.setDescription(dto.description());
-        if (dto.startTime() != null) quiz.setStartTime(dto.startTime());
-        if (dto.endTime() != null) quiz.setEndTime(dto.endTime());
-
-        // Validate time if both are provided
-        if (dto.startTime() != null && dto.endTime() != null) {
-            if (dto.endTime().isBefore(dto.startTime())) {
-                throw CustomResponseException.BadRequest("End time must be after start time");
-            }
+        // Check if quiz has already started
+        if (existingQuiz.getStartTime().isBefore(ZonedDateTime.now())) {
+            throw CustomResponseException.BadRequest("Cannot update quiz that has already started");
         }
 
-        // Update questions if provided
-        if (dto.questions() != null && !dto.questions().isEmpty()) {
-            updateQuizQuestions(quiz, dto.questions());
-        }
+        // Validate time constraints
+        validateQuizTimes(updateQuizDTO.startTime(), updateQuizDTO.endTime());
 
-        return mapper.toQuizResponseDTO(quizRepo.save(quiz));
+        // Validate questions have at least one correct answer
+        validateUpdateQuestions(updateQuizDTO.questions());
+
+        // Update quiz
+        Quiz updatedQuiz = mapper.updateQuizFromDTO(existingQuiz, updateQuizDTO);
+        Quiz savedQuiz = quizRepo.save(updatedQuiz);
+
+        return mapper.toQuizResponseDTO(savedQuiz, false);
     }
 
-    // Delete BY ((quizId))
+    // ====================== DELETE QUIZ ======================
     @Transactional
     public String deleteQuiz(UUID quizId) {
         Quiz quiz = quizRepo.findById(quizId)
-                .orElseThrow(() -> CustomResponseException.ResourceNotFound("Quiz not found"));
-
-        if (!quiz.getUser().getId().equals(currentUser.getCurrentUser().getId())) {
-            throw CustomResponseException.BadRequest("Not authorized");
-        }
-
-        if (quiz.hasStarted()) {
-            throw CustomResponseException.BadRequest("Cannot delete started quiz");
-        }
+                .orElseThrow(() -> CustomResponseException.ResourceNotFound("Quiz not found with ID: " + quizId));
 
         quizRepo.delete(quiz);
-        return "Quiz Deleted Success";
+
+        return "Quiz deleted successfully";
     }
 
-    //    Get All
-    public Page<QuizResponseDTO> getAllQuizzes(int page, int size) {
+    // ====================== GET ALL QUIZZES WITH STATUS CHECK ======================
+    public Page<QuizSummaryResponseDTO> getAllQuizzes(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Quiz> quizzesPage = quizRepo.findAll(pageable);
 
-        // Convert Page<Quiz> to Page<QuizResponseDTO>
-        return quizzesPage.map(mapper::toQuizResponseDTOWithoutQuestions);
+        // Convert Page<Quiz> to Page<QuizSummaryResponseDTO>
+        return quizzesPage.map(mapper::toQuizSummaryResponseDTO);
     }
 
-    // Get Single BY ((quizId))
-    @Transactional(readOnly = true)
-    public QuizResponseDTO getQuizById(UUID quizId) {
+    // ====================== GET SINGLE QUIZ For Update ======================
+    public QuizResponseDTO getSingleForUpdate(UUID quizId) {
         Quiz quiz = quizRepo.findById(quizId)
-                .orElseThrow(() -> CustomResponseException.ResourceNotFound("Quiz not found"));
+                .orElseThrow(() -> CustomResponseException.ResourceNotFound("Quiz not found with ID: " + quizId));
 
-        return mapper.toQuizResponseDTO(quiz);
+        return mapper.toQuizResponseDTO(quiz, false);
     }
 
-    // Get All for ((Specific-User))
-    @Transactional(readOnly = true)
-    public List<QuizResponseDTO> getAllQuizzesForUser(UUID userId) {
-        User user = userRepo.findById(userId).orElseThrow(() ->
-                CustomResponseException.ResourceNotFound("User not found with this ID: " + userId));
-
-        List<Quiz> quizzes = quizRepo.findByUserId(user.getId());
-
-        return mapper.toQuizResponseDTOListWithoutQuestions(quizzes);
-    }
-
-    // Get All (((Completed))) for ((Specific-User))
-    @Transactional(readOnly = true)
-    public List<QuizResponseDTO> getTakenQuizzesByUser(UUID userId) {
-        User user = userRepo.findById(userId).orElseThrow(() ->
-                CustomResponseException.ResourceNotFound("User not found with this ID: " + userId));
-
-        List<Quiz> takenQuizzes = quizRepo.findTakenQuizzesByUserId(user.getId());
-
-        return mapper.toQuizResponseDTOListWithoutQuestions(takenQuizzes);
-    }
-
-
-    // ***************************** ((Specifications)) *********************** //
-    // Submit Multiple Answers
+    // ====================== GET SINGLE QUIZ WITH STATUS CHECK ======================
     @Transactional
-    public QuizResponseDTO submitAnswers(UUID quizId, Map<UUID, String> answers) {
+    public QuizResponseDTO getQuizForStudent(UUID quizId) {
         Quiz quiz = quizRepo.findById(quizId)
-                .orElseThrow(() -> CustomResponseException.ResourceNotFound("Quiz not found with this ID: " + quizId));
+                .orElseThrow(() -> CustomResponseException.ResourceNotFound("Quiz not found with ID: " + quizId));
 
-        if (!quiz.getUser().getId().equals(currentUser.getCurrentUser().getId())) {
-            throw CustomResponseException.BadRequest("Not authorized");
+        User authUser = currentUser.getCurrentUser();
+        ZonedDateTime now = ZonedDateTime.now();
+
+        // Check if user has already taken this quiz
+        boolean hasAnyAttempt = quizAttemptRepo.existsByUserIdAndQuizId(authUser.getId(), quizId);
+
+        if (hasAnyAttempt) {
+            throw CustomResponseException.BadRequest("You have already taken this quiz 😉");
         }
-        if (!quiz.isActive()) {
-            throw CustomResponseException.BadRequest("Quiz not active");
+
+        // Check if quiz has expired - CREATE SCORE 0 HERE ONLY
+        if (now.isAfter(quiz.getEndTime())) {
+            // Create automatic failed attempt with score 0 for THIS quiz only
+            QuizAttempt expiredAttempt = QuizAttempt.builder()
+                    .attemptNumber(1)
+                    .startedAt(quiz.getEndTime())
+                    .completedAt(quiz.getEndTime())
+                    .totalScore(0.0)
+                    .isCompleted(true)
+                    .user(authUser)
+                    .quiz(quiz)
+                    .userAnswers(new ArrayList<>())
+                    .build();
+
+            quizAttemptRepo.save(expiredAttempt);
+
+            throw CustomResponseException.BadRequest("You cannot take this quiz - time has finished");
         }
 
-        if (quiz.getUserScore() > 0) {
-            throw CustomResponseException.BadRequest("Quiz already completed");
+        // Check if quiz hasn't started yet
+        if (now.isBefore(quiz.getStartTime())) {
+            throw CustomResponseException.BadRequest("Quiz has not started yet 🥰😎🤗");
         }
 
-        // Submit all answers
-        for (Map.Entry<UUID, String> entry : answers.entrySet()) {
-            UUID questionId = entry.getKey();
-            String answer = entry.getValue();
+        // Return quiz without correct answers for active quiz
+        return mapper.toQuizResponseDTO(quiz, true);
+    }
 
-            Question question = questionRepo.findById(questionId)
-                    .orElseThrow(() -> CustomResponseException.ResourceNotFound("Question not found: " + questionId));
+    // ====================== GET FINISHED QUIZZES FOR CURRENT USER WITH SCORES ======================
+    public List<QuizAttemptResponseDTO> getFinishedQuizzesForUser() {
+        User authUser = currentUser.getCurrentUser();
 
-            // Verify question belongs to this quiz
-            if (!question.getQuiz().getId().equals(quiz.getId())) {
-                throw CustomResponseException.BadRequest("Question does not belong to this quiz");
+        List<QuizAttempt> completedAttempts = quizAttemptRepo.findCompletedAttemptsByUserId(authUser.getId());
+
+        return completedAttempts.stream()
+                .map(mapper::mapToQuizAttemptResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    // ====================== GET FINISHED QUIZZES FOR SPECIFIC USER WITH SCORES (Admin/Instructor use) ======================
+    public List<QuizAttemptResponseDTO> getFinishedQuizzesForUser(UUID userId) {
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> CustomResponseException.ResourceNotFound("User not found with ID: " + userId));
+
+        List<QuizAttempt> completedAttempts = quizAttemptRepo.findCompletedAttemptsByUserId(user.getId());
+
+        return completedAttempts.stream()
+                .map(mapper::mapToQuizAttemptResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    // ====================== SUBMIT QUIZ ANSWERS ======================
+    @Transactional
+    public QuizAttemptResponseDTO submitQuizAnswers(UUID quizId, Map<UUID, UUID> questionAnswerMap) {
+        User authUser = currentUser.getCurrentUser();
+
+        // Get quiz with questions only
+        Quiz quiz = quizRepo.findByIdWithQuestions(quizId)
+                .orElseThrow(() -> CustomResponseException.ResourceNotFound("Quiz not found with ID: " + quizId));
+
+        // Fetch questions with options separately and create a lookup map
+        List<Question> questionsWithOptions = quizRepo.findQuestionsWithOptionsByQuizId(quizId);
+        Map<UUID, List<QuestionOption>> questionOptionsMap = questionsWithOptions.stream()
+                .collect(Collectors.toMap(Question::getId, Question::getOptions));
+
+        // Check if quiz is available for submission
+        ZonedDateTime now = ZonedDateTime.now();
+        if (now.isBefore(quiz.getStartTime()) || now.isAfter(quiz.getEndTime())) {
+            throw CustomResponseException.BadRequest("Quiz is not available for submission");
+        }
+
+        // Rest of validation code...
+        int userAttempts = quizAttemptRepo.countByUserIdAndQuizId(authUser.getId(), quizId);
+        if (userAttempts >= quiz.getMaxAttempts()) {
+            throw CustomResponseException.BadRequest("You have exceeded the maximum number of attempts");
+        }
+
+        List<UUID> quizQuestionIds = quiz.getQuestions().stream()
+                .map(Question::getId)
+                .collect(Collectors.toList());
+
+        if (!questionAnswerMap.keySet().containsAll(quizQuestionIds)) {
+            throw CustomResponseException.BadRequest("All questions must be answered");
+        }
+
+        // Create quiz attempt
+        QuizAttempt quizAttempt = QuizAttempt.builder()
+                .attemptNumber(userAttempts + 1)
+                .startedAt(now)
+                .completedAt(now)
+                .totalScore(0.0)
+                .isCompleted(true)
+                .user(authUser)
+                .quiz(quiz)
+                .userAnswers(new ArrayList<>())
+                .build();
+
+        QuizAttempt savedAttempt = quizAttemptRepo.save(quizAttempt);
+
+        // Process answers and calculate score
+        double totalScore = 0.0;
+        List<UserAnswer> userAnswers = new ArrayList<>();
+
+        for (Question question : quiz.getQuestions()) {
+            UUID selectedOptionId = questionAnswerMap.get(question.getId());
+
+            if (selectedOptionId == null) {
+                throw CustomResponseException.BadRequest("Answer required for question: " + question.getId());
             }
 
-            question.setUserAnswer(answer);
-            questionRepo.save(question);
+            // Get options from our map instead of from the question entity
+            List<QuestionOption> options = questionOptionsMap.get(question.getId());
+            if (options == null) {
+                throw CustomResponseException.BadRequest("Question options not found for question: " + question.getId());
+            }
+
+            // Validate option belongs to question
+            QuestionOption selectedOption = options.stream()
+                    .filter(option -> option.getId().equals(selectedOptionId))
+                    .findFirst()
+                    .orElseThrow(() -> CustomResponseException.BadRequest("Invalid option selected for question: " + question.getId()));
+
+            // Calculate points
+            boolean isCorrect = selectedOption.getIsCorrect();
+            double pointsEarned = isCorrect ? question.getPoints() : 0.0;
+            totalScore += pointsEarned;
+
+            // Create user answer
+            UserAnswer userAnswer = UserAnswer.builder()
+                    .answeredAt(now)
+                    .isCorrect(isCorrect)
+                    .pointsEarned(pointsEarned)
+                    .user(authUser)
+                    .question(question)
+                    .selectedOption(selectedOption)
+                    .quizAttempt(savedAttempt)
+                    .build();
+
+            userAnswers.add(userAnswer);
         }
 
-        // Auto-calculate and save score
-        return calculateAndSaveScore(quiz);
+        // Save all user answers
+        List<UserAnswer> savedUserAnswers = userAnswerRepo.saveAll(userAnswers);
+
+        // Update attempt with total score and user answers
+        savedAttempt.setTotalScore(totalScore);
+        savedAttempt.setUserAnswers(savedUserAnswers);
+        QuizAttempt finalAttempt = quizAttemptRepo.save(savedAttempt);
+
+        return mapper.mapToQuizAttemptResponseDTO(finalAttempt);
     }
 
-    // Helper Calculate and Save Score
-    @Transactional
-    private QuizResponseDTO calculateAndSaveScore(Quiz quiz) {
-        if (!quiz.getUser().getId().equals(currentUser.getCurrentUser().getId())) {
-            throw CustomResponseException.BadRequest("Not authorized");
+
+    // ====================== PRIVATE HELPER METHODS ======================
+    private void validateQuizTimes(ZonedDateTime startTime, ZonedDateTime endTime) {
+        if (startTime.isAfter(endTime)) {
+            throw CustomResponseException.BadRequest("Start time must be before end time");
         }
 
-        if (quiz.getUserScore() > 0) {
-            throw CustomResponseException.BadRequest("Quiz already completed");
+        if (startTime.isBefore(ZonedDateTime.now().minusMinutes(5))) {
+            throw CustomResponseException.BadRequest("Start time cannot be in the past");
         }
+    }
 
-        // Calculate user score using the new isUserAnswerCorrect method
-        Double userScore = quiz.getQuestions().stream()
-                .filter(Question::isUserAnswerCorrect)
-                .mapToDouble(Question::getPoints)
-                .sum();
+    private void validateQuestions(List<com.mostafa.lms_api.dto.quiz.create.CreateQuestionDTO> questions) {
+        for (var question : questions) {
+            boolean hasCorrectAnswer = question.options().stream()
+                    .anyMatch(com.mostafa.lms_api.dto.quiz.create.CreateQuestionOptionDTO::isCorrect);
 
-        quiz.setUserScore(userScore);
+            if (!hasCorrectAnswer) {
+                throw CustomResponseException.BadRequest("Each question must have at least one correct answer");
+            }
+        }
+    }
 
-        // Update total score (in case questions were modified)
-        Double totalScore = quiz.getQuestions().stream()
-                .mapToDouble(Question::getPoints).sum();
-        quiz.setTotalScore(totalScore);
+    private void validateUpdateQuestions(List<com.mostafa.lms_api.dto.quiz.update.UpdateQuestionDTO> questions) {
+        for (var question : questions) {
+            boolean hasCorrectAnswer = question.options().stream()
+                    .anyMatch(com.mostafa.lms_api.dto.quiz.update.UpdateQuestionOptionDTO::isCorrect);
 
-        return mapper.toQuizResponseDTO(quizRepo.save(quiz));
+            if (!hasCorrectAnswer) {
+                throw CustomResponseException.BadRequest("Each question must have at least one correct answer");
+            }
+        }
     }
 
 

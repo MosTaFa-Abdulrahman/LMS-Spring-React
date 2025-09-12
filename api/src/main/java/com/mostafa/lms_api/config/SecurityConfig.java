@@ -119,15 +119,16 @@ public class SecurityConfig {
                             .requestMatchers(HttpMethod.POST, "/api/enrollments").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
                             .requestMatchers(HttpMethod.GET, "/api/enrollments/user/{userId}").authenticated()
                             .requestMatchers(HttpMethod.GET, "/api/enrollments/section/{sectionId}").authenticated()
-                            //  ((Quizzes))  //
+                            //  ((Quizzes))
                             .requestMatchers(HttpMethod.POST, "/api/quizzes").hasAnyRole("ADMIN", "INSTRUCTOR")
                             .requestMatchers(HttpMethod.PUT, "/api/quizzes/{quizId}").hasAnyRole("ADMIN", "INSTRUCTOR")
                             .requestMatchers(HttpMethod.DELETE, "/api/quizzes/{quizId}").hasAnyRole("ADMIN", "INSTRUCTOR")
                             .requestMatchers(HttpMethod.GET, "/api/quizzes").authenticated()
-                            .requestMatchers(HttpMethod.GET, "/api/quizzes/{quizId}").authenticated()
-                            .requestMatchers(HttpMethod.GET, "/api/quizzes/user/{userId}").authenticated()
-                            .requestMatchers(HttpMethod.GET, "/api/quizzes/user/{userId}/taken").authenticated()
+                            .requestMatchers(HttpMethod.GET, "/api/quizzes/{quizId}/take").authenticated()
+                            .requestMatchers(HttpMethod.GET, "/api/quizzes/{quizId}").hasAnyRole("ADMIN", "INSTRUCTOR")
                             .requestMatchers(HttpMethod.POST, "/api/quizzes/{quizId}/submit").authenticated()
+                            .requestMatchers(HttpMethod.GET, "/api/quizzes/my-attempts").authenticated()
+                            .requestMatchers(HttpMethod.GET, "/api/quizzes/user/{userId}/attempts").hasAnyRole("ADMIN", "INSTRUCTOR")
                             .anyRequest()
                             .authenticated();
 

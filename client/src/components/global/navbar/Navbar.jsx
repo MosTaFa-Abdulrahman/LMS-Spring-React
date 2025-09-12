@@ -117,7 +117,7 @@ function Navbar() {
     submenu: [
       { label: "All Courses", path: "/admin/courses" },
       { label: "All Users", path: "/admin/users" },
-      { label: "All Quizzes", path: "/admin/quizzes" },
+      { label: "All Quizzes", path: "/quizzes" },
     ],
   };
 

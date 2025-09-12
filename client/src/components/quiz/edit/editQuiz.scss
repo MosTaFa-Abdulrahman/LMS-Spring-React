@@ -102,8 +102,16 @@
         }
       }
 
+      .selected-course-indicator {
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+
       input {
         padding-left: 3rem;
+        padding-right: 3rem;
       }
     }
 
@@ -125,7 +133,12 @@
       }
 
       .dropdown-loading,
+      .dropdown-error,
       .no-results {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
         padding: 1rem;
         text-align: center;
         font-size: 0.9rem;
@@ -133,6 +146,14 @@
         @include themed() {
           color: t(text-secondary);
         }
+
+        svg {
+          flex-shrink: 0;
+        }
+      }
+
+      .dropdown-error {
+        color: #ef4444;
       }
 
       .course-option {
@@ -166,10 +187,13 @@
 
         .course-info {
           flex: 1;
+          display: flex;
+          flex-direction: column;
 
           .course-title {
             font-weight: 600;
             margin-bottom: 0.25rem;
+            font-size: 0.9rem;
 
             @include themed() {
               color: t(text-primary);
@@ -177,12 +201,15 @@
           }
 
           .course-level {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             opacity: 0.8;
-
-            @include themed() {
-              color: t(text-secondary);
-            }
+            padding: 0.125rem 0.5rem;
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+            border-radius: 20px;
+            width: fit-content;
+            text-transform: uppercase;
+            font-weight: 500;
           }
         }
       }
@@ -250,6 +277,291 @@
         &:hover {
           background-color: #ef4444;
           color: white;
+        }
+      }
+    }
+  }
+
+  // Questions Section Styles
+  .questions-section {
+    margin-top: 2rem;
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+
+      @include themed() {
+        border-bottom: 2px solid t(border-color);
+      }
+
+      h3 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin: 0;
+
+        @include themed() {
+          color: t(text-primary);
+        }
+      }
+
+      .add-question-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.625rem 1.25rem;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+
+        &:hover:not(:disabled) {
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        &:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+          transform: none;
+        }
+
+        svg {
+          width: 16px;
+          height: 16px;
+        }
+      }
+    }
+
+    .section-error {
+      margin-bottom: 1rem;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .question-card {
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      position: relative;
+      transition: all 0.3s ease;
+
+      @include themed() {
+        background-color: t(card-bg);
+        border: 1px solid t(border-color);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      }
+
+      &:hover {
+        @include themed() {
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        }
+      }
+
+      .question-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+
+        .question-number {
+          font-weight: 700;
+          font-size: 1rem;
+          padding: 0.5rem 1rem;
+          border-radius: 20px;
+          background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+          color: white;
+        }
+
+        .delete-question-btn {
+          width: 36px;
+          height: 36px;
+          border: none;
+          border-radius: 8px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          background-color: rgba(239, 68, 68, 0.1);
+          color: #ef4444;
+
+          &:hover {
+            background-color: #ef4444;
+            color: white;
+            transform: scale(1.1);
+          }
+
+          svg {
+            width: 18px;
+            height: 18px;
+          }
+        }
+      }
+
+      .options-section {
+        margin-top: 1.5rem;
+
+        .options-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 1rem;
+
+          label {
+            margin-bottom: 0;
+            font-weight: 600;
+            font-size: 1rem;
+          }
+
+          .add-option-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+
+            &:hover:not(:disabled) {
+              background: rgba(16, 185, 129, 0.2);
+              transform: translateY(-1px);
+            }
+
+            &:disabled {
+              opacity: 0.5;
+              cursor: not-allowed;
+              transform: none;
+            }
+
+            svg {
+              width: 14px;
+              height: 14px;
+            }
+          }
+        }
+
+        .option-item {
+          margin-bottom: 1rem;
+
+          .option-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            width: 100%;
+
+            .option-letter {
+              width: 32px;
+              height: 32px;
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-weight: 700;
+              font-size: 0.9rem;
+              flex-shrink: 0;
+              background: linear-gradient(135deg, #6366f1, #4f46e5);
+              color: white;
+            }
+
+            input[type="text"] {
+              flex: 1;
+              margin-bottom: 0;
+            }
+
+            .option-actions {
+              display: flex;
+              align-items: center;
+              gap: 1rem;
+              flex-shrink: 0;
+
+              .correct-checkbox {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                cursor: pointer;
+                margin-bottom: 0;
+                font-weight: 500;
+                font-size: 0.85rem;
+
+                input[type="checkbox"] {
+                  width: 18px;
+                  height: 18px;
+                  accent-color: #10b981;
+                  cursor: pointer;
+                }
+
+                span {
+                  @include themed() {
+                    color: t(text-secondary);
+                  }
+                }
+              }
+
+              .delete-option-btn {
+                width: 28px;
+                height: 28px;
+                border: none;
+                border-radius: 6px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                background-color: rgba(239, 68, 68, 0.1);
+                color: #ef4444;
+
+                &:hover {
+                  background-color: #ef4444;
+                  color: white;
+                  transform: scale(1.1);
+                }
+
+                svg {
+                  width: 14px;
+                  height: 14px;
+                }
+              }
+            }
+          }
+
+          .option-error {
+            margin-left: 48px;
+            margin-top: 0.25rem;
+          }
+        }
+      }
+    }
+
+    .no-questions {
+      text-align: center;
+      padding: 3rem 2rem;
+      border-radius: 12px;
+      border: 2px dashed;
+
+      @include themed() {
+        border-color: t(border-color);
+        background-color: rgba(156, 163, 175, 0.05);
+      }
+
+      p {
+        font-size: 1rem;
+        margin: 0;
+
+        @include themed() {
+          color: t(text-secondary);
         }
       }
     }
@@ -348,6 +660,75 @@
     &:hover {
       @include themed() {
         background-color: t(bg-active);
+      }
+    }
+  }
+}
+
+// Responsive Design
+@include sm {
+  .edit-quiz-form {
+    .questions-section {
+      .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+
+        .add-question-btn {
+          align-self: stretch;
+          justify-content: center;
+        }
+      }
+
+      .question-card {
+        padding: 1rem;
+
+        .question-header {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 1rem;
+
+          .delete-question-btn {
+            align-self: flex-end;
+          }
+        }
+
+        .options-section {
+          .options-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.75rem;
+
+            .add-option-btn {
+              align-self: stretch;
+              justify-content: center;
+            }
+          }
+
+          .option-item {
+            .option-controls {
+              flex-direction: column;
+              align-items: stretch;
+              gap: 0.75rem;
+
+              .option-letter {
+                align-self: flex-start;
+              }
+
+              .option-actions {
+                justify-content: space-between;
+
+                .correct-checkbox {
+                  flex: 1;
+                }
+              }
+            }
+
+            .option-error {
+              margin-left: 0;
+            }
+          }
+        }
       }
     }
   }

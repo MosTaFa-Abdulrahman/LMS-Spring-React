@@ -1,10 +1,11 @@
 package com.mostafa.lms_api.controller;
 
-
 import com.mostafa.lms_api.dto.PaginatedResponse;
-import com.mostafa.lms_api.dto.quiz.CreateQuizDTO;
-import com.mostafa.lms_api.dto.quiz.QuizResponseDTO;
-import com.mostafa.lms_api.dto.quiz.UpdateQuizDTO;
+import com.mostafa.lms_api.dto.quiz.create.CreateQuizDTO;
+import com.mostafa.lms_api.dto.quiz.get.QuizAttemptResponseDTO;
+import com.mostafa.lms_api.dto.quiz.get.QuizResponseDTO;
+import com.mostafa.lms_api.dto.quiz.get.QuizSummaryResponseDTO;
+import com.mostafa.lms_api.dto.quiz.update.UpdateQuizDTO;
 import com.mostafa.lms_api.global.GlobalResponse;
 import com.mostafa.lms_api.service.QuizService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,7 +28,7 @@ public class QuizController {
     private final QuizService quizService;
 
 
-    //    Create
+    // Create Quiz
     @PostMapping
     public ResponseEntity<GlobalResponse<QuizResponseDTO>> createQuiz(
             @Valid @RequestBody CreateQuizDTO dto) {
@@ -37,49 +38,50 @@ public class QuizController {
         return new ResponseEntity<>(res, HttpStatus.CREATED);
     }
 
-    //    Update
+    // Update Quiz
     @PutMapping("/{quizId}")
     public ResponseEntity<GlobalResponse<QuizResponseDTO>> updateQuiz(
             @Valid @RequestBody UpdateQuizDTO dto,
             @PathVariable UUID quizId) {
-        QuizResponseDTO updatedQuiz = quizService.updateQuiz(quizId, dto);
+        // Set the ID from path parameter to DTO
+        UpdateQuizDTO updatedDto = new UpdateQuizDTO(
+                quizId,
+                dto.title(),
+                dto.description(),
+                dto.startTime(),
+                dto.endTime(),
+                dto.questions()
+        );
+
+        QuizResponseDTO updatedQuiz = quizService.updateQuiz(updatedDto);
         GlobalResponse<QuizResponseDTO> res = new GlobalResponse<>(updatedQuiz);
 
         return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
-    //    Delete
+    // Delete Quiz
     @DeleteMapping("/{quizId}")
     public ResponseEntity<GlobalResponse<String>> deleteQuiz(@PathVariable UUID quizId) {
-        String deletedQuiz = quizService.deleteQuiz(quizId);
-        GlobalResponse<String> res = new GlobalResponse<>(deletedQuiz);
+        String result = quizService.deleteQuiz(quizId);
+        GlobalResponse<String> res = new GlobalResponse<>(result);
 
         return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
-    //    Get Single
-    @GetMapping("/{quizId}")
-    public ResponseEntity<GlobalResponse<QuizResponseDTO>> getQuiz(@PathVariable UUID quizId) {
-        QuizResponseDTO quiz = quizService.getQuizById(quizId);
-        GlobalResponse<QuizResponseDTO> res = new GlobalResponse<>(quiz);
-
-        return new ResponseEntity<>(res, HttpStatus.OK);
-    }
-
-    //    Get All
+    // Get All Quizzes
     @GetMapping
-    public ResponseEntity<GlobalResponse<PaginatedResponse<QuizResponseDTO>>> getAll(
+    public ResponseEntity<GlobalResponse<PaginatedResponse<QuizSummaryResponseDTO>>> getAll(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
             HttpServletRequest req
     ) {
-        Page<QuizResponseDTO> quizzes = quizService.getAllQuizzes(page - 1, size);
+        Page<QuizSummaryResponseDTO> quizzes = quizService.getAllQuizzes(page - 1, size);
 
         String baseUrl = req.getRequestURL().toString();
         String nextUrl = quizzes.hasNext() ? String.format("%s?page=%d&size=%d", baseUrl, page + 1, size) : null;
         String prevUrl = quizzes.hasPrevious() ? String.format("%s?page=%d&size=%d", baseUrl, page - 1, size) : null;
 
-        var paginatedResponse = new PaginatedResponse<QuizResponseDTO>(
+        var paginatedResponse = new PaginatedResponse<QuizSummaryResponseDTO>(
                 quizzes.getContent(),
                 quizzes.getNumber() + 1,
                 quizzes.getTotalPages(),
@@ -93,35 +95,52 @@ public class QuizController {
         return new ResponseEntity<>(new GlobalResponse<>(paginatedResponse), HttpStatus.OK);
     }
 
-
-    //    Get All For ((Specific-User))
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<GlobalResponse<List<QuizResponseDTO>>> getAllQuizzes(
-            @PathVariable UUID userId) {
-        List<QuizResponseDTO> quiz = quizService.getAllQuizzesForUser(userId);
-        GlobalResponse<List<QuizResponseDTO>> res = new GlobalResponse<>(quiz);
+    // Get Single Quiz for ((update))
+    @GetMapping("/{quizId}")
+    public ResponseEntity<GlobalResponse<QuizResponseDTO>> getSingleQuiz(@PathVariable UUID quizId) {
+        QuizResponseDTO quiz = quizService.getSingleForUpdate(quizId);
+        GlobalResponse<QuizResponseDTO> res = new GlobalResponse<>(quiz);
 
         return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
-    //    Get All (((Completed))) For ((Specific-User))
-    @GetMapping("/user/{userId}/taken")
-    public ResponseEntity<GlobalResponse<List<QuizResponseDTO>>> getAllTakenQuizzes(
-            @PathVariable UUID userId) {
-        List<QuizResponseDTO> quiz = quizService.getTakenQuizzesByUser(userId);
-        GlobalResponse<List<QuizResponseDTO>> res = new GlobalResponse<>(quiz);
+    // Get Single Quiz for Student (to take quiz)
+    @GetMapping("/{quizId}/take")
+    public ResponseEntity<GlobalResponse<QuizResponseDTO>> getQuizForStudent(@PathVariable UUID quizId) {
+        QuizResponseDTO quiz = quizService.getQuizForStudent(quizId);
+        GlobalResponse<QuizResponseDTO> res = new GlobalResponse<>(quiz);
 
         return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
-
-    // ***************************** ((Specifications)) *********************** //
-    //    Submit All
+    // Submit Quiz Answers
     @PostMapping("/{quizId}/submit")
-    public ResponseEntity<GlobalResponse<QuizResponseDTO>> submitAnswers(
-            @PathVariable UUID quizId, @RequestBody Map<UUID, String> answers) {
-        QuizResponseDTO result = quizService.submitAnswers(quizId, answers);
-        GlobalResponse<QuizResponseDTO> res = new GlobalResponse<>(result);
+    public ResponseEntity<GlobalResponse<QuizAttemptResponseDTO>> submitQuizAnswers(
+            @PathVariable UUID quizId,
+            @Valid @RequestBody Map<UUID, UUID> questionAnswerMap) {
+        QuizAttemptResponseDTO attempt = quizService.submitQuizAnswers(quizId, questionAnswerMap);
+        GlobalResponse<QuizAttemptResponseDTO> res = new GlobalResponse<>(attempt);
+
+        return new ResponseEntity<>(res, HttpStatus.OK);
+    }
+
+    // ***************************** ((User Quiz Results)) *********************** //
+
+    // Get Finished Quizzes for Current User
+    @GetMapping("/my-attempts")
+    public ResponseEntity<GlobalResponse<List<QuizAttemptResponseDTO>>> getMyFinishedQuizzes() {
+        List<QuizAttemptResponseDTO> attempts = quizService.getFinishedQuizzesForUser();
+        GlobalResponse<List<QuizAttemptResponseDTO>> res = new GlobalResponse<>(attempts);
+
+        return new ResponseEntity<>(res, HttpStatus.OK);
+    }
+
+    // Get Finished Quizzes for Specific User (Admin/Instructor use)
+    @GetMapping("/user/{userId}/attempts")
+    public ResponseEntity<GlobalResponse<List<QuizAttemptResponseDTO>>> getFinishedQuizzesForUser(
+            @PathVariable UUID userId) {
+        List<QuizAttemptResponseDTO> attempts = quizService.getFinishedQuizzesForUser(userId);
+        GlobalResponse<List<QuizAttemptResponseDTO>> res = new GlobalResponse<>(attempts);
 
         return new ResponseEntity<>(res, HttpStatus.OK);
     }

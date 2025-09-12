@@ -65,8 +65,17 @@ export const quizSlice = createApi({
       providesTags: ["Quiz"],
     }),
 
-    // Get single quiz by ID
+    // Get single quiz by ID for ((Take 🤞))
     getQuizById: builder.query({
+      query: (quizId) => ({
+        url: `/${quizId}/take`,
+        method: "GET",
+      }),
+      providesTags: (result, error, quizId) => [{ type: "Quiz", id: quizId }],
+    }),
+
+    // Get single quiz by ID for ((Update 🤞))
+    getSingleQuizById: builder.query({
       query: (quizId) => ({
         url: `/${quizId}`,
         method: "GET",
@@ -77,10 +86,10 @@ export const quizSlice = createApi({
       providesTags: (result, error, quizId) => [{ type: "Quiz", id: quizId }],
     }),
 
-    // Get All For ((Specific-User)) not paginated
+    // Get All Finished For ((Specific-User)) not paginated for (ADMIN || INSTRUCTOR)
     getAllQuizzesForUser: builder.query({
       query: (userId) => ({
-        url: `/user/${userId}`,
+        url: `/user/${userId}/attempts`,
         method: "GET",
       }),
       transformResponse: (response) => {
@@ -90,19 +99,16 @@ export const quizSlice = createApi({
         { type: "Quiz", id: `user-${userId}` },
       ],
     }),
-
-    // Get All (((Completed))) For ((Specific-User)) not paginated
-    getTakenQuizzesByUser: builder.query({
-      query: (userId) => ({
-        url: `/user/${userId}/taken`,
+    // Get All Finished For ((Current-User)) not paginated
+    getAllQuizzesForCurrentUser: builder.query({
+      query: () => ({
+        url: `/my-attempts`,
         method: "GET",
       }),
       transformResponse: (response) => {
         return response.data || null;
       },
-      providesTags: (result, error, userId) => [
-        { type: "Quiz", id: `taken-${userId}` },
-      ],
+      providesTags: (result, error) => [{ type: "Quiz" }],
     }),
 
     // Submit All
@@ -128,8 +134,9 @@ export const {
   useUpdateQuizMutation,
   useDeleteQuizMutation,
   useGetQuizzesQuery,
-  useGetQuizByIdQuery,
-  useGetAllQuizzesForUserQuery,
-  useGetTakenQuizzesByUserQuery,
+  useGetQuizByIdQuery, // for take
+  useGetSingleQuizByIdQuery, // for update
+  useGetAllQuizzesForUserQuery, // for specificUser
+  useGetAllQuizzesForCurrentUserQuery, // for currentUser
   useSubmitAnswersMutation,
 } = quizSlice;

@@ -202,10 +202,6 @@ function Quizzes() {
                     </span>
                   </div>
                   <div className="meta-item">
-                    <span className="label">Total Score:</span>
-                    <span className="value">{quiz.totalScore} pts</span>
-                  </div>
-                  <div className="meta-item">
                     <span className="label">Start:</span>
                     <span className="value">{formatDate(quiz.startTime)}</span>
                   </div>
@@ -298,7 +294,7 @@ function Quizzes() {
         isLoading={isCreating}
       />
 
-      {/* <EditQuiz
+      <EditQuiz
         isOpen={isEditModalOpen}
         onClose={() => {
           setIsEditModalOpen(false);
@@ -307,7 +303,7 @@ function Quizzes() {
         onSubmit={handleEditQuiz}
         quizId={selectedQuizId}
         isLoading={isUpdating}
-      /> */}
+      />
     </div>
   );
 }

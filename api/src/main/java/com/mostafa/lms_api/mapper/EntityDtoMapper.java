@@ -1,7 +1,5 @@
 package com.mostafa.lms_api.mapper;
 
-import com.mostafa.lms_api.dto.choice.ChoiceResponseDTO;
-import com.mostafa.lms_api.dto.choice.CreateChoiceDTO;
 import com.mostafa.lms_api.dto.course.CourseResponseDTO;
 import com.mostafa.lms_api.dto.course.CourseSummaryDTO;
 import com.mostafa.lms_api.dto.course.CreateCourseDTO;
@@ -9,10 +7,9 @@ import com.mostafa.lms_api.dto.enrollment.EnrollmentResponseDTO;
 import com.mostafa.lms_api.dto.file.CreateFileDTO;
 import com.mostafa.lms_api.dto.file.FileResponseDTO;
 import com.mostafa.lms_api.dto.progress.ProgressResponseDTO;
-import com.mostafa.lms_api.dto.question.CreateQuestionDTO;
-import com.mostafa.lms_api.dto.question.QuestionResponseDTO;
-import com.mostafa.lms_api.dto.quiz.CreateQuizDTO;
-import com.mostafa.lms_api.dto.quiz.QuizResponseDTO;
+import com.mostafa.lms_api.dto.quiz.create.CreateQuizDTO;
+import com.mostafa.lms_api.dto.quiz.get.*;
+import com.mostafa.lms_api.dto.quiz.update.UpdateQuizDTO;
 import com.mostafa.lms_api.dto.section.CreateSectionDTO;
 import com.mostafa.lms_api.dto.section.SectionResponseDTO;
 import com.mostafa.lms_api.dto.section.SectionSummaryDTO;
@@ -27,6 +24,7 @@ import com.mostafa.lms_api.enums.EnrollmentStatus;
 import com.mostafa.lms_api.model.*;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -338,218 +336,264 @@ public class EntityDtoMapper {
     }
 
 
-    //    ****************************** ((Quiz)) ************************* //
-    public Choice toChoiceEntity(CreateChoiceDTO dto, Question question) {
-        if (dto == null) {
-            return null;
-        }
-
-        return Choice.builder()
-                .choiceText(dto.choiceText())
-                .choiceLabel(dto.choiceLabel().toUpperCase())
-                .isCorrect(dto.isCorrect() != null ? dto.isCorrect() : false)
-                .question(question)
-                .build();
-    }
-
-
-    public ChoiceResponseDTO toChoiceResponseDTO(Choice choice) {
-        if (choice == null) {
-            return null;
-        }
-
-        return new ChoiceResponseDTO(
-                choice.getId(),
-                choice.getChoiceText(),
-                choice.getChoiceLabel(),
-                choice.getIsCorrect()
-        );
-    }
-
-
-    public Question toQuestionEntity(CreateQuestionDTO dto, Quiz quiz) {
-        if (dto == null) {
-            return null;
-        }
-
-        Question question = Question.builder()
-                .text(dto.text())
-                .questionImage(dto.questionImage())
-                .points(dto.points())
-                .quiz(quiz)
-                .userAnswer(null) // Initialize as null
-                .build();
-
-        // Create choices if provided
-        if (dto.choices() != null && !dto.choices().isEmpty()) {
-            List<Choice> choices = dto.choices().stream()
-                    .map(choiceDTO -> toChoiceEntity(choiceDTO, question))
-                    .collect(Collectors.toList());
-            question.setChoices(choices);
-        }
-
-        return question;
-    }
-
-
-    public QuestionResponseDTO toQuestionResponseDTO(Question question) {
-        if (question == null) {
-            return null;
-        }
-
-        // Convert choices to response DTOs
-        List<ChoiceResponseDTO> choiceDTOs = null;
-        if (question.getChoices() != null && !question.getChoices().isEmpty()) {
-            choiceDTOs = question.getChoices().stream()
-                    .map(this::toChoiceResponseDTO)
-                    .sorted((a, b) -> a.choiceLabel().compareTo(b.choiceLabel())) // Sort by label
-                    .collect(Collectors.toList());
-        }
-
-        return new QuestionResponseDTO(
-                question.getId(),
-                question.getText(),
-                question.getQuestionImage(),
-                question.getUserAnswer(),
-                question.getCorrectAnswerLabel(),
-                question.getPoints(),
-                choiceDTOs,
-                question.isUserAnswerCorrect() // This returns boolean, but DTO accepts Boolean
-        );
-    }
-
-
-    public QuestionResponseDTO toQuestionResponseDTOWithoutCorrectAnswer(Question question) {
-        if (question == null) {
-            return null;
-        }
-
-        // Convert choices to response DTOs but hide correct answer info
-        List<ChoiceResponseDTO> choiceDTOs = null;
-        if (question.getChoices() != null && !question.getChoices().isEmpty()) {
-            choiceDTOs = question.getChoices().stream()
-                    .map(choice -> new ChoiceResponseDTO(
-                            choice.getId(),
-                            choice.getChoiceText(),
-                            choice.getChoiceLabel(),
-                            null // Hide correct answer
-                    ))
-                    .sorted((a, b) -> a.choiceLabel().compareTo(b.choiceLabel()))
-                    .collect(Collectors.toList());
-        }
-
-        return new QuestionResponseDTO(
-                question.getId(),
-                question.getText(),
-                question.getQuestionImage(),
-                question.getUserAnswer(),
-                null, // Hide correct answer
-                question.getPoints(),
-                choiceDTOs,
-                null // Hide if answered correctly
-        );
-    }
-
-    public Quiz toQuizEntity(CreateQuizDTO dto, User user, Course course) {
-        if (dto == null) {
-            return null;
-        }
-
-        return Quiz.builder()
+    // **************************************************************************** //
+    // ====================== TO ENTITY METHODS ======================
+    public Quiz toQuizEntity(CreateQuizDTO dto, Course course, User user) {
+        Quiz quiz = Quiz.builder()
                 .title(dto.title())
                 .description(dto.description())
                 .startTime(dto.startTime())
                 .endTime(dto.endTime())
-                .user(user)
+                .maxAttempts(1) // Default value
                 .course(course)
-                .userScore(0.0) // Initialize user score
-                .totalScore(0.0) // Will be calculated from questions
+                .user(user)
+                .questions(new ArrayList<>())
+                .build();
+
+        // Map questions
+        List<Question> questions = dto.questions().stream()
+                .map(questionDTO -> toQuestionEntity(questionDTO, quiz))
+                .collect(Collectors.toList());
+
+        quiz.setQuestions(questions);
+        return quiz;
+    }
+
+    public Question toQuestionEntity(com.mostafa.lms_api.dto.quiz.create.CreateQuestionDTO dto, Quiz quiz) {
+        Question question = Question.builder()
+                .questionText(dto.questionText())
+                .points(dto.points())
+                .quiz(quiz)
+                .options(new ArrayList<>())
+                .build();
+
+        // Map options
+        List<QuestionOption> options = dto.options().stream()
+                .map(optionDTO -> toQuestionOptionEntity(optionDTO, question))
+                .collect(Collectors.toList());
+
+        question.setOptions(options);
+        return question;
+    }
+
+    public QuestionOption toQuestionOptionEntity(com.mostafa.lms_api.dto.quiz.create.CreateQuestionOptionDTO dto, Question question) {
+        return QuestionOption.builder()
+                .optionText(dto.optionText())
+                .optionSelect(dto.optionSelect())
+                .isCorrect(dto.isCorrect())
+                .question(question)
                 .build();
     }
 
+    // ====================== TO DTO METHODS ======================
 
-    public QuizResponseDTO toQuizResponseDTO(Quiz quiz) {
-        if (quiz == null) {
-            return null;
-        }
-
-        // Convert questions to response DTOs
-        List<QuestionResponseDTO> questionDTOs = null;
-        if (quiz.getQuestions() != null && !quiz.getQuestions().isEmpty()) {
-            // Show correct answers if quiz is completed or ended
-            if (quiz.isCompletedByUser() || quiz.hasEnded()) {
-                questionDTOs = quiz.getQuestions().stream()
-                        .map(this::toQuestionResponseDTO)
-                        .collect(Collectors.toList());
-            } else {
-                // Hide correct answers if quiz is still active
-                questionDTOs = quiz.getQuestions().stream()
-                        .map(this::toQuestionResponseDTOWithoutCorrectAnswer)
-                        .collect(Collectors.toList());
-            }
-        }
-
-        return new QuizResponseDTO(
+    public QuizSummaryResponseDTO toQuizSummaryResponseDTO(Quiz quiz) {
+        return new QuizSummaryResponseDTO(
                 quiz.getId(),
                 quiz.getTitle(),
                 quiz.getDescription(),
                 quiz.getStartTime(),
                 quiz.getEndTime(),
-                quiz.getTotalScore(),
-                quiz.getUserScore(),
-                // User details
+                quiz.getMaxAttempts(),
                 quiz.getUser().getId(),
                 quiz.getUser().getFirstName(),
                 quiz.getUser().getLastName(),
-                // Course details
-                quiz.getCourse() != null ? quiz.getCourse().getId() : null,
-                quiz.getCourse() != null ? quiz.getCourse().getCourseImg() : null,
-                quiz.getCourse() != null ? quiz.getCourse().getLevel() : null,
-                // Questions with choices
-                questionDTOs,
-                // Completion status
-                quiz.isCompletedByUser()
+                quiz.getUser().getProfileImageUrl(),
+                quiz.getCourse().getTitle(),
+                quiz.getCourse().getCourseImg(),
+                quiz.getCourse().getLevel()
         );
     }
 
-
-    public QuizResponseDTO toQuizResponseDTOWithoutQuestions(Quiz quiz) {
-        if (quiz == null) {
-            return null;
-        }
-
-        return new QuizResponseDTO(
-                quiz.getId(),
-                quiz.getTitle(),
-                quiz.getDescription(),
-                quiz.getStartTime(),
-                quiz.getEndTime(),
-                quiz.getTotalScore(),
-                quiz.getUserScore(),
-                // User details
-                quiz.getUser().getId(),
-                quiz.getUser().getFirstName(),
-                quiz.getUser().getLastName(),
-                // Course details
-                quiz.getCourse() != null ? quiz.getCourse().getId() : null,
-                quiz.getCourse() != null ? quiz.getCourse().getCourseImg() : null,
-                quiz.getCourse() != null ? quiz.getCourse().getLevel() : null,
-                // No questions included
-                null,
-                // Completion status
-                quiz.isCompletedByUser()
-        );
-    }
-
-
-    public List<QuizResponseDTO> toQuizResponseDTOListWithoutQuestions(List<Quiz> quizzes) {
-        if (quizzes == null || quizzes.isEmpty()) {
-            return null;
-        }
-
-        return quizzes.stream()
-                .map(this::toQuizResponseDTOWithoutQuestions)
+    public QuizResponseDTO toQuizResponseDTO(Quiz quiz, boolean hideCorrectAnswers) {
+        List<QuestionResponseDTO> questions = quiz.getQuestions().stream()
+                .map(question -> toQuestionResponseDTO(question, hideCorrectAnswers))
                 .collect(Collectors.toList());
+
+        return new QuizResponseDTO(
+                quiz.getId(),
+                quiz.getTitle(),
+                quiz.getDescription(),
+                quiz.getStartTime(),
+                quiz.getEndTime(),
+                quiz.getMaxAttempts(),
+                quiz.getUser().getId(),
+                quiz.getUser().getFirstName(),
+                quiz.getUser().getLastName(),
+                quiz.getUser().getProfileImageUrl(),
+                quiz.getCourse().getId(),
+                quiz.getCourse().getTitle(),
+                quiz.getCourse().getCourseImg(),
+                quiz.getCourse().getLevel(),
+                questions
+        );
+    }
+
+    public QuestionResponseDTO toQuestionResponseDTO(Question question, boolean hideCorrectAnswers) {
+        List<QuestionOptionResponseDTO> options = question.getOptions().stream()
+                .map(option -> toQuestionOptionResponseDTO(option, hideCorrectAnswers))
+                .collect(Collectors.toList());
+
+        return new QuestionResponseDTO(
+                question.getId(),
+                question.getQuestionText(),
+                question.getPoints(),
+                options
+        );
+    }
+
+    public QuestionOptionResponseDTO toQuestionOptionResponseDTO(QuestionOption option, boolean hideCorrectAnswers) {
+        return new QuestionOptionResponseDTO(
+                option.getId(),
+                option.getOptionText(),
+                option.getOptionSelect(),
+                hideCorrectAnswers ? null : option.getIsCorrect()
+        );
+    }
+
+    public QuizAttemptResponseDTO mapToQuizAttemptResponseDTO(QuizAttempt attempt) {
+        return new QuizAttemptResponseDTO(
+                attempt.getId(),
+                attempt.getAttemptNumber(),
+                attempt.getStartedAt(),
+                attempt.getCompletedAt(),
+                attempt.getTotalScore(),
+                attempt.getIsCompleted(),
+                attempt.getQuiz().getId(),
+                attempt.getQuiz().getTitle(),
+                attempt.getQuiz().getDescription(),
+                attempt.getQuiz().getCourse().getId(),
+                attempt.getQuiz().getCourse().getTitle(),
+                attempt.getQuiz().getCourse().getCourseImg(),
+                attempt.getQuiz().getCourse().getLevel(),
+                // Calculate total possible points
+                attempt.getQuiz().getQuestions().stream()
+                        .mapToDouble(Question::getPoints)
+                        .sum(),
+                // Map user answers with correct answer info
+                attempt.getUserAnswers().stream()
+                        .map(this::mapToUserAnswerResponseDTO)
+                        .collect(Collectors.toList())
+        );
+    }
+
+    public UserAnswerResponseDTO mapToUserAnswerResponseDTO(UserAnswer userAnswer) {
+        return new UserAnswerResponseDTO(
+                userAnswer.getId(),
+                userAnswer.getQuestion().getId(),
+                userAnswer.getQuestion().getQuestionText(),
+                userAnswer.getSelectedOption().getId(),
+                userAnswer.getSelectedOption().getOptionText(),
+                userAnswer.getSelectedOption().getOptionSelect(),
+                userAnswer.getIsCorrect(),
+                userAnswer.getPointsEarned(),
+                userAnswer.getAnsweredAt(),
+                // Get correct answer
+                userAnswer.getQuestion().getOptions().stream()
+                        .filter(QuestionOption::getIsCorrect)
+                        .findFirst()
+                        .map(option -> new CorrectAnswerDTO(
+                                option.getId(),
+                                option.getOptionText(),
+                                option.getOptionSelect()
+                        ))
+                        .orElse(null)
+        );
+    }
+
+
+    // ====================== UPDATE ENTITY METHODS ======================
+    public Quiz updateQuizFromDTO(Quiz existingQuiz, UpdateQuizDTO dto) {
+        existingQuiz.setTitle(dto.title());
+        existingQuiz.setDescription(dto.description());
+        existingQuiz.setStartTime(dto.startTime());
+        existingQuiz.setEndTime(dto.endTime());
+
+        // Handle questions update
+        updateQuestionsFromDTO(existingQuiz, dto.questions());
+
+        return existingQuiz;
+    }
+
+    private void updateQuestionsFromDTO(Quiz quiz, List<com.mostafa.lms_api.dto.quiz.update.UpdateQuestionDTO> questionDTOs) {
+        List<Question> existingQuestions = quiz.getQuestions();
+        List<Question> updatedQuestions = new ArrayList<>();
+
+        for (com.mostafa.lms_api.dto.quiz.update.UpdateQuestionDTO questionDTO : questionDTOs) {
+            Question question;
+
+            if (questionDTO.id() != null) {
+                // Update existing question
+                question = existingQuestions.stream()
+                        .filter(q -> q.getId().equals(questionDTO.id()))
+                        .findFirst()
+                        .orElseThrow(() -> new RuntimeException("Question not found: " + questionDTO.id()));
+
+                question.setQuestionText(questionDTO.questionText());
+                question.setPoints(questionDTO.points());
+                updateQuestionOptionsFromDTO(question, questionDTO.options());
+            } else {
+                // Create new question
+                question = Question.builder()
+                        .questionText(questionDTO.questionText())
+                        .points(questionDTO.points())
+                        .quiz(quiz)
+                        .options(new ArrayList<>())
+                        .build();
+
+                List<QuestionOption> options = questionDTO.options().stream()
+                        .map(optionDTO -> QuestionOption.builder()
+                                .optionText(optionDTO.optionText())
+                                .optionSelect(optionDTO.optionSelect())
+                                .isCorrect(optionDTO.isCorrect())
+                                .question(question)
+                                .build())
+                        .collect(Collectors.toList());
+
+                question.setOptions(options);
+            }
+
+            updatedQuestions.add(question);
+        }
+
+        // Clear existing questions and set updated ones
+        existingQuestions.clear();
+        existingQuestions.addAll(updatedQuestions);
+    }
+
+    private void updateQuestionOptionsFromDTO(Question question, List<com.mostafa.lms_api.dto.quiz.update.UpdateQuestionOptionDTO> optionDTOs) {
+        List<QuestionOption> existingOptions = question.getOptions();
+        List<QuestionOption> updatedOptions = new ArrayList<>();
+
+        for (com.mostafa.lms_api.dto.quiz.update.UpdateQuestionOptionDTO optionDTO : optionDTOs) {
+            QuestionOption option;
+
+            if (optionDTO.id() != null) {
+                // Update existing option
+                option = existingOptions.stream()
+                        .filter(o -> o.getId().equals(optionDTO.id()))
+                        .findFirst()
+                        .orElseThrow(() -> new RuntimeException("Option not found: " + optionDTO.id()));
+
+                option.setOptionText(optionDTO.optionText());
+                option.setOptionSelect(optionDTO.optionSelect());
+                option.setIsCorrect(optionDTO.isCorrect());
+            } else {
+                // Create new option
+                option = QuestionOption.builder()
+                        .optionText(optionDTO.optionText())
+                        .optionSelect(optionDTO.optionSelect())
+                        .isCorrect(optionDTO.isCorrect())
+                        .question(question)
+                        .build();
+            }
+
+            updatedOptions.add(option);
+        }
+
+        // Clear existing options and set updated ones
+        existingOptions.clear();
+        existingOptions.addAll(updatedOptions);
     }
 
 

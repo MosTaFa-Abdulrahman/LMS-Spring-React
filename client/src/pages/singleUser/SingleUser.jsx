@@ -24,6 +24,14 @@ import {
   AlertCircle,
   Lock,
   CheckCircle,
+  Trophy,
+  Clock,
+  Target,
+  Award,
+  TrendingUp,
+  FileText,
+  Brain,
+  Star,
 } from "lucide-react";
 import { useParams } from "react-router-dom";
 import Spinner from "../../components/global/spinner/Spinner";
@@ -36,6 +44,10 @@ import {
   useCreateEnrollmentMutation,
   useGetEnrollmentsQuery,
 } from "../../store/enrollments/enrollmentSlice";
+import {
+  useGetAllQuizzesForUserQuery,
+  useGetAllQuizzesForCurrentUserQuery,
+} from "../../store/quizzes/quizSlice";
 import toast from "react-hot-toast";
 
 function SingleUser() {
@@ -50,6 +62,8 @@ function SingleUser() {
   const [selectedSection, setSelectedSection] = useState(null);
   const [enrollmentAmount, setEnrollmentAmount] = useState("");
   const [showEnrollmentModal, setShowEnrollmentModal] = useState(false);
+  const [selectedQuizAttempt, setSelectedQuizAttempt] = useState(null);
+  const [showQuizDetailsModal, setShowQuizDetailsModal] = useState(false);
 
   // Refs for debouncing
   const debounceTimerRef = useRef(null);
@@ -79,6 +93,13 @@ function SingleUser() {
     { title: debouncedSearchTerm, page: searchPage, size: 10 },
     { skip: !debouncedSearchTerm }
   );
+
+  // Quiz attempts query
+  const {
+    data: quizAttemptsResponse,
+    isLoading: quizAttemptsLoading,
+    error: quizAttemptsError,
+  } = useGetAllQuizzesForUserQuery(userId);
 
   // Create enrollment mutation
   const [createEnrollment, { isLoading: creatingEnrollment }] =
@@ -120,6 +141,7 @@ function SingleUser() {
   const hasNext = enrollmentsResponse?.data?.hasNext || false;
   const totalItems = enrollmentsResponse?.data?.totalItems || 0;
   const searchCourses = searchResponse?.data?.content || [];
+  const quizAttempts = quizAttemptsResponse || [];
 
   // Function to get enrolled sections for an enrollment
   const getEnrolledSections = useCallback((enrollment) => {
@@ -163,6 +185,45 @@ function SingleUser() {
       enrolledSections: getEnrolledSections(enrollment),
     }));
   }, [enrollments, getEnrolledSections]);
+
+  // Quiz statistics
+  const quizStats = useMemo(() => {
+    if (!quizAttempts.length) {
+      return {
+        totalAttempts: 0,
+        totalQuizzes: 0,
+        averageScore: 0,
+        totalPointsEarned: 0,
+        totalPossiblePoints: 0,
+      };
+    }
+
+    const totalAttempts = quizAttempts.length;
+    const uniqueQuizzes = new Set(
+      quizAttempts.map((attempt) => attempt.quizId)
+    );
+    const totalQuizzes = uniqueQuizzes.size;
+    const totalPointsEarned = quizAttempts.reduce(
+      (sum, attempt) => sum + attempt.totalScore,
+      0
+    );
+    const totalPossiblePoints = quizAttempts.reduce(
+      (sum, attempt) => sum + attempt.totalPossiblePoints,
+      0
+    );
+    const averageScore =
+      totalPossiblePoints > 0
+        ? (totalPointsEarned / totalPossiblePoints) * 100
+        : 0;
+
+    return {
+      totalAttempts,
+      totalQuizzes,
+      averageScore: Math.round(averageScore * 100) / 100,
+      totalPointsEarned,
+      totalPossiblePoints,
+    };
+  }, [quizAttempts]);
 
   // Handle search input change
   const handleSearchInputChange = useCallback((term) => {
@@ -213,6 +274,12 @@ function SingleUser() {
     }
   };
 
+  // Handle quiz attempt selection
+  const handleQuizAttemptSelect = (attempt) => {
+    setSelectedQuizAttempt(attempt);
+    setShowQuizDetailsModal(true);
+  };
+
   // Reset search when modal closes
   const handleCloseSearchModal = () => {
     setShowSearchModal(false);
@@ -230,6 +297,15 @@ function SingleUser() {
       hour: "2-digit",
       minute: "2-digit",
     });
+  };
+
+  // Get quiz performance color
+  const getPerformanceColor = (score, totalPossible) => {
+    const percentage = (score / totalPossible) * 100;
+    if (percentage >= 80) return "excellent";
+    if (percentage >= 60) return "good";
+    if (percentage >= 40) return "average";
+    return "poor";
   };
 
   // Loading states
@@ -313,7 +389,159 @@ function SingleUser() {
               <span className="stat-label">Active Courses</span>
             </div>
           </div>
+          <div className="stat-card">
+            <Brain className="stat-icon" />
+            <div className="stat-content">
+              <span className="stat-number">{quizStats.totalQuizzes}</span>
+              <span className="stat-label">Quizzes Taken</span>
+            </div>
+          </div>
+          <div className="stat-card">
+            <Trophy className="stat-icon" />
+            <div className="stat-content">
+              <span className="stat-number">{quizStats.averageScore}%</span>
+              <span className="stat-label">Average Score</span>
+            </div>
+          </div>
         </div>
+      </div>
+
+      {/* Quiz Results Section */}
+      <div className="quiz-results-section">
+        <div className="section-header">
+          <h2>Quiz Results</h2>
+          <span className="section-count">
+            {quizStats.totalAttempts} attempts
+          </span>
+        </div>
+
+        {quizAttemptsLoading ? (
+          <div className="loading-container">
+            <Spinner size={20} text="Loading quiz results..." />
+          </div>
+        ) : quizAttempts.length === 0 ? (
+          <div className="empty-state">
+            <Brain className="empty-icon" />
+            <p>No quiz attempts found</p>
+          </div>
+        ) : (
+          <div className="quiz-attempts-grid">
+            {quizAttempts.map((attempt) => {
+              const percentage =
+                (attempt.totalScore / attempt.totalPossiblePoints) * 100;
+              const performanceLevel = getPerformanceColor(
+                attempt.totalScore,
+                attempt.totalPossiblePoints
+              );
+
+              return (
+                <div key={attempt.id} className="quiz-attempt-card">
+                  <div className="card-header">
+                    <div className="quiz-info">
+                      <div className="course-image">
+                        <img
+                          src={attempt.courseImg}
+                          alt={attempt.courseTitle}
+                        />
+                      </div>
+                      <div className="quiz-details">
+                        <h3>{attempt.quizTitle}</h3>
+                        <span className="course-name">
+                          {attempt.courseTitle}
+                        </span>
+                        <span
+                          className={`level-badge level-${attempt.courseLevel
+                            .toLowerCase()
+                            .replace("_", "-")}`}
+                        >
+                          {attempt.courseLevel.replace("_", " ")}
+                        </span>
+                      </div>
+                    </div>
+                    <div
+                      className={`performance-badge performance-${performanceLevel}`}
+                    >
+                      <Star className="performance-icon" />
+                      <span>{Math.round(percentage)}%</span>
+                    </div>
+                  </div>
+
+                  <div className="card-content">
+                    <div className="quiz-meta">
+                      <div className="meta-row">
+                        <Clock className="meta-icon" />
+                        <span>
+                          Completed: {formatDate(attempt.completedAt)}
+                        </span>
+                      </div>
+                      <div className="meta-row">
+                        <Target className="meta-icon" />
+                        <span>Attempt #{attempt.attemptNumber}</span>
+                      </div>
+                      <div className="meta-row">
+                        <Award className="meta-icon" />
+                        <span>
+                          Score: {attempt.totalScore} /{" "}
+                          {attempt.totalPossiblePoints}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="progress-section">
+                      <div className="progress-header">
+                        <span>Performance</span>
+                        <span>{Math.round(percentage)}%</span>
+                      </div>
+                      <div className="progress-bar">
+                        <div
+                          className={`progress-fill progress-${performanceLevel}`}
+                          style={{ width: `${Math.min(percentage, 100)}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="answers-summary">
+                      <div className="summary-stats">
+                        <div className="stat-item correct">
+                          <CheckCircle className="stat-icon" />
+                          <span>
+                            {
+                              attempt.userAnswers.filter((a) => a.isCorrect)
+                                .length
+                            }{" "}
+                            Correct
+                          </span>
+                        </div>
+                        <div className="stat-item incorrect">
+                          <X className="stat-icon" />
+                          <span>
+                            {
+                              attempt.userAnswers.filter((a) => !a.isCorrect)
+                                .length
+                            }{" "}
+                            Incorrect
+                          </span>
+                        </div>
+                        <div className="stat-item total">
+                          <FileText className="stat-icon" />
+                          <span>{attempt.userAnswers.length} Total</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <button
+                      className="view-details-button"
+                      onClick={() => handleQuizAttemptSelect(attempt)}
+                    >
+                      <FileText className="button-icon" />
+                      View Detailed Results
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Actions Section */}
@@ -446,6 +674,138 @@ function SingleUser() {
           </div>
         )}
       </div>
+
+      {/* Quiz Details Modal */}
+      {showQuizDetailsModal && selectedQuizAttempt && (
+        <div
+          className="modal-overlay"
+          onClick={() => setShowQuizDetailsModal(false)}
+        >
+          <div
+            className="modal-content quiz-details-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="modal-header">
+              <h3>Quiz Results Details</h3>
+              <button
+                className="close-button"
+                onClick={() => setShowQuizDetailsModal(false)}
+              >
+                <X />
+              </button>
+            </div>
+
+            <div className="quiz-details-content">
+              <div className="quiz-summary">
+                <div className="quiz-header-info">
+                  <div className="course-image">
+                    <img
+                      src={selectedQuizAttempt.courseImg}
+                      alt={selectedQuizAttempt.courseTitle}
+                    />
+                  </div>
+                  <div className="quiz-meta">
+                    <h4>{selectedQuizAttempt.quizTitle}</h4>
+                    <p>{selectedQuizAttempt.quizDescription}</p>
+                    <span className="course-title">
+                      {selectedQuizAttempt.courseTitle}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="quiz-stats">
+                  <div className="stat-item">
+                    <Trophy className="stat-icon" />
+                    <div className="stat-content">
+                      <span className="stat-value">
+                        {selectedQuizAttempt.totalScore}
+                      </span>
+                      <span className="stat-label">Points Earned</span>
+                    </div>
+                  </div>
+                  <div className="stat-item">
+                    <Target className="stat-icon" />
+                    <div className="stat-content">
+                      <span className="stat-value">
+                        {selectedQuizAttempt.totalPossiblePoints}
+                      </span>
+                      <span className="stat-label">Total Points</span>
+                    </div>
+                  </div>
+                  <div className="stat-item">
+                    <TrendingUp className="stat-icon" />
+                    <div className="stat-content">
+                      <span className="stat-value">
+                        {Math.round(
+                          (selectedQuizAttempt.totalScore /
+                            selectedQuizAttempt.totalPossiblePoints) *
+                            100
+                        )}
+                        %
+                      </span>
+                      <span className="stat-label">Percentage</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="answers-section">
+                <h5>Question by Question Results</h5>
+                <div className="answers-list">
+                  {selectedQuizAttempt.userAnswers.map((answer, index) => (
+                    <div
+                      key={answer.id}
+                      className={`answer-item ${
+                        answer.isCorrect ? "correct" : "incorrect"
+                      }`}
+                    >
+                      <div className="answer-header">
+                        <div className="question-number">
+                          <span>Q{index + 1}</span>
+                          {answer.isCorrect ? (
+                            <CheckCircle className="result-icon correct" />
+                          ) : (
+                            <X className="result-icon incorrect" />
+                          )}
+                        </div>
+                        <div className="points-earned">
+                          {answer.pointsEarned} pts
+                        </div>
+                      </div>
+
+                      <div className="question-text">{answer.questionText}</div>
+
+                      <div className="answer-details">
+                        <div className="selected-answer">
+                          <strong>Your Answer:</strong>
+                          <span
+                            className={`answer-option ${
+                              answer.isCorrect ? "correct" : "incorrect"
+                            }`}
+                          >
+                            ({answer.selectedOptionSelect}){" "}
+                            {answer.selectedOptionText}
+                          </span>
+                        </div>
+
+                        {!answer.isCorrect && (
+                          <div className="correct-answer">
+                            <strong>Correct Answer:</strong>
+                            <span className="answer-option correct">
+                              ({answer.correctAnswer.optionSelect}){" "}
+                              {answer.correctAnswer.optionText}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Search Modal */}
       {showSearchModal && (

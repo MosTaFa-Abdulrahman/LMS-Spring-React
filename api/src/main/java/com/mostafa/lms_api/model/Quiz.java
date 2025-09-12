@@ -1,12 +1,9 @@
 package com.mostafa.lms_api.model;
 
-
 import com.mostafa.lms_api.base.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -23,63 +20,32 @@ public class Quiz extends BaseEntity<UUID> {
     @Column(name = "title", nullable = false)
     private String title;
 
-    @Column(name = "description", columnDefinition = "TEXT")
+    @Column(name = "description", nullable = false)
     private String description;
 
-    @Column(name = "start_time")
-    private LocalDateTime startTime;
+    @Column(name = "start_time", nullable = false)
+    private ZonedDateTime startTime; // Egypt timezone
 
-    @Column(name = "end_time")
-    private LocalDateTime endTime;
+    @Column(name = "end_time", nullable = false)
+    private ZonedDateTime endTime; // Egypt timezone
 
-    // Quiz results - store user's score
-    @Column(name = "user_score")
-    private Double userScore = 0.0;
-
-    @Column(name = "total_score")
-    private Double totalScore = 0.0;
+    @Column(name = "max_attempts")
+    @Builder.Default
+    private Integer maxAttempts = 1; // User can take quiz only once
 
 
     // Relationships
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "course_id")
+    @JoinColumn(name = "course_id", nullable = false)
     private Course course;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private User user; // Student who took the quiz
+    private User user; // Instructor who created the quiz
 
-    @OneToMany(mappedBy = "quiz", fetch = FetchType.LAZY,
-            cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Question> questions;
 
-
-    // Helper methods for time management with Egypt timezone
-    public static final ZoneId EGYPT_ZONE = ZoneId.of("Africa/Cairo");
-
-    public boolean isActive() {
-        ZonedDateTime nowInEgypt = ZonedDateTime.now(EGYPT_ZONE);
-        LocalDateTime nowLocal = nowInEgypt.toLocalDateTime();
-        return nowLocal.isAfter(startTime) && nowLocal.isBefore(endTime);
-    }
-
-    public boolean hasStarted() {
-        ZonedDateTime nowInEgypt = ZonedDateTime.now(EGYPT_ZONE);
-        LocalDateTime nowLocal = nowInEgypt.toLocalDateTime();
-        return nowLocal.isAfter(startTime);
-    }
-
-    public boolean hasEnded() {
-        ZonedDateTime nowInEgypt = ZonedDateTime.now(EGYPT_ZONE);
-        LocalDateTime nowLocal = nowInEgypt.toLocalDateTime();
-        return nowLocal.isAfter(endTime);
-    }
-
-
-    // Helper method to check if quiz is completed by user
-    public boolean isCompletedByUser() {
-        return userScore != null && userScore > 0;
-    }
-
-
+    @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<QuizAttempt> quizAttempts; // All attempts for this quiz
 }

@@ -1,5 +1,5 @@
 import "./createQuiz.scss";
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useContext } from "react";
 import {
   Search,
   Calendar,
@@ -8,17 +8,14 @@ import {
   BookOpen,
   Plus,
   Trash2,
-  ImageIcon,
 } from "lucide-react";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
-import moment from "moment";
 
 // Components
 import Modal from "../../global/modal/Modal";
 
-// RTKQ
+// RTKQ & Context
 import { useSearchCoursesQuery } from "../../../store/courses/courseSlice";
+import { AuthContext } from "../../../context/AuthContext";
 
 // Debounce hook
 const useDebounce = (value, delay) => {
@@ -37,12 +34,35 @@ const useDebounce = (value, delay) => {
   return debouncedValue;
 };
 
+// Helper function to format datetime for input
+const formatDateTimeForInput = (date) => {
+  if (!date) return "";
+  const d = new Date(date);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  const hours = String(d.getHours()).padStart(2, "0");
+  const minutes = String(d.getMinutes()).padStart(2, "0");
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+};
+
+// Helper function to convert local datetime to ISO string
+const formatDateTimeForSubmit = (dateTimeString) => {
+  if (!dateTimeString) return null;
+  const localDate = new Date(dateTimeString);
+  return localDate.toISOString();
+};
+
 function CreateQuiz({ isOpen, onClose, onSubmit, isLoading }) {
+  // Context
+  const { currentUser: userData } = useContext(AuthContext);
+  const currentUser = userData?.userInfo;
+
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    startTime: null,
-    endTime: null,
+    startTime: "",
+    endTime: "",
     courseId: "",
     questions: [],
   });
@@ -82,8 +102,8 @@ function CreateQuiz({ isOpen, onClose, onSubmit, isLoading }) {
       setFormData({
         title: "",
         description: "",
-        startTime: null,
-        endTime: null,
+        startTime: "",
+        endTime: "",
         courseId: "",
         questions: [],
       });
@@ -119,11 +139,11 @@ function CreateQuiz({ isOpen, onClose, onSubmit, isLoading }) {
     [errors]
   );
 
-  const handleDateChange = useCallback(
-    (date, field) => {
+  const handleDateTimeChange = useCallback(
+    (field, value) => {
       setFormData((prev) => ({
         ...prev,
-        [field]: date,
+        [field]: value,
       }));
 
       // Clear related errors
@@ -178,21 +198,19 @@ function CreateQuiz({ isOpen, onClose, onSubmit, isLoading }) {
   const addQuestion = () => {
     const newQuestion = {
       id: Date.now(), // temporary ID for UI
-      text: "",
-      questionImage: "",
-      correctAnswer: "",
-      points: 5,
-      choices: [
+      questionText: "",
+      points: 5.0,
+      options: [
         {
           id: Date.now() + 1,
-          choiceText: "",
-          choiceLabel: "A",
+          optionText: "",
+          optionSelect: "A",
           isCorrect: false,
         },
         {
           id: Date.now() + 2,
-          choiceText: "",
-          choiceLabel: "B",
+          optionText: "",
+          optionSelect: "B",
           isCorrect: false,
         },
       ],
@@ -275,63 +293,63 @@ function CreateQuiz({ isOpen, onClose, onSubmit, isLoading }) {
     }
   };
 
-  const addChoice = (questionId) => {
+  const addOption = (questionId) => {
     setFormData((prev) => ({
       ...prev,
       questions: prev.questions.map((q) => {
         if (q.id === questionId) {
-          const nextLabel = String.fromCharCode(65 + q.choices.length); // A, B, C, D...
-          const newChoice = {
+          const nextLabel = String.fromCharCode(65 + q.options.length); // A, B, C, D...
+          const newOption = {
             id: Date.now(),
-            choiceText: "",
-            choiceLabel: nextLabel,
+            optionText: "",
+            optionSelect: nextLabel,
             isCorrect: false,
           };
-          return { ...q, choices: [...q.choices, newChoice] };
+          return { ...q, options: [...q.options, newOption] };
         }
         return q;
       }),
     }));
   };
 
-  const removeChoice = (questionId, choiceId) => {
+  const removeOption = (questionId, optionId) => {
     setFormData((prev) => ({
       ...prev,
       questions: prev.questions.map((q) => {
         if (q.id === questionId) {
-          const updatedChoices = q.choices
-            .filter((c) => c.id !== choiceId)
-            .map((c, index) => ({
-              ...c,
-              choiceLabel: String.fromCharCode(65 + index), // Re-label A, B, C...
+          const updatedOptions = q.options
+            .filter((o) => o.id !== optionId)
+            .map((o, index) => ({
+              ...o,
+              optionSelect: String.fromCharCode(65 + index), // Re-label A, B, C...
             }));
-          return { ...q, choices: updatedChoices };
+          return { ...q, options: updatedOptions };
         }
         return q;
       }),
     }));
   };
 
-  const updateChoice = (questionId, choiceId, field, value) => {
+  const updateOption = (questionId, optionId, field, value) => {
     setFormData((prev) => ({
       ...prev,
       questions: prev.questions.map((q) => {
         if (q.id === questionId) {
           return {
             ...q,
-            choices: q.choices.map((c) => {
-              if (c.id === choiceId) {
-                // If setting this choice as correct, unset others
+            options: q.options.map((o) => {
+              if (o.id === optionId) {
+                // If setting this option as correct, unset others
                 if (field === "isCorrect" && value === true) {
-                  return { ...c, [field]: value };
+                  return { ...o, [field]: value };
                 }
-                return { ...c, [field]: value };
+                return { ...o, [field]: value };
               }
-              // If setting this choice as correct, unset others
+              // If setting this option as correct, unset others
               if (field === "isCorrect" && value === true) {
-                return { ...c, isCorrect: false };
+                return { ...o, isCorrect: false };
               }
-              return c;
+              return o;
             }),
           };
         }
@@ -345,36 +363,40 @@ function CreateQuiz({ isOpen, onClose, onSubmit, isLoading }) {
 
     // Basic validations
     if (!formData.title.trim()) {
-      newErrors.title = "Quiz title is required";
-    } else if (formData.title.length < 3 || formData.title.length > 200) {
-      newErrors.title = "Title must be between 3 and 200 characters";
+      newErrors.title = "Title is required";
+    } else if (formData.title.length > 500) {
+      newErrors.title = "Title must not exceed 500 characters";
     }
 
-    if (formData.description && formData.description.length > 1000) {
-      newErrors.description = "Description cannot exceed 1000 characters";
+    if (!formData.description.trim()) {
+      newErrors.description = "Description is required";
+    } else if (formData.description.length > 1000) {
+      newErrors.description = "Description must not exceed 1000 characters";
     }
 
     if (!formData.startTime) {
       newErrors.startTime = "Start time is required";
-    } else if (moment(formData.startTime).isBefore(moment())) {
+    } else if (new Date(formData.startTime) <= new Date()) {
       newErrors.startTime = "Start time must be in the future";
     }
 
     if (!formData.endTime) {
       newErrors.endTime = "End time is required";
+    } else if (new Date(formData.endTime) <= new Date()) {
+      newErrors.endTime = "End time must be in the future";
     } else if (
       formData.startTime &&
-      moment(formData.endTime).isBefore(moment(formData.startTime))
+      new Date(formData.endTime) <= new Date(formData.startTime)
     ) {
       newErrors.endTime = "End time must be after start time";
     }
 
     if (!formData.courseId) {
-      newErrors.courseId = "Course selection is required";
+      newErrors.courseId = "Course ID is required";
     }
 
     if (!formData.questions.length) {
-      newErrors.questions = "At least one question is required";
+      newErrors.questions = "Quiz must have at least one question";
     } else if (formData.questions.length > 50) {
       newErrors.questions = "Quiz cannot have more than 50 questions";
     }
@@ -384,46 +406,40 @@ function CreateQuiz({ isOpen, onClose, onSubmit, isLoading }) {
     formData.questions.forEach((question, index) => {
       const qErrors = {};
 
-      if (!question.text.trim()) {
-        qErrors.text = "Question text is required";
-      } else if (question.text.length < 10 || question.text.length > 500) {
-        qErrors.text = "Question text must be between 10 and 500 characters";
+      if (!question.questionText.trim()) {
+        qErrors.questionText = "Question text is required";
+      } else if (question.questionText.length > 2000) {
+        qErrors.questionText = "Question text must not exceed 2000 characters";
       }
 
-      if (!question.correctAnswer.trim()) {
-        qErrors.correctAnswer = "Correct answer is required";
-      } else if (question.correctAnswer.length > 200) {
-        qErrors.correctAnswer = "Correct answer cannot exceed 200 characters";
+      if (!question.points || question.points < 0.25 || question.points > 100) {
+        qErrors.points = "Points must be between 0.25 and 100";
       }
 
-      if (!question.points || question.points < 0.5 || question.points > 100) {
-        qErrors.points = "Points must be between 0.5 and 100";
-      }
-
-      if (!question.choices.length || question.choices.length < 2) {
-        qErrors.choices = "At least 2 choices are required";
-      } else if (question.choices.length > 9) {
-        qErrors.choices = "Question cannot have more than 9 choices";
+      if (!question.options.length || question.options.length < 2) {
+        qErrors.options = "Question must have at least 2 options";
+      } else if (question.options.length > 6) {
+        qErrors.options = "Question must have between 2 and 6 options";
       }
 
       // Check for exactly one correct answer
-      const correctChoices = question.choices.filter((c) => c.isCorrect);
-      if (correctChoices.length !== 1) {
-        qErrors.correctChoice = "Exactly one choice must be marked as correct";
+      const correctOptions = question.options.filter((o) => o.isCorrect);
+      if (correctOptions.length !== 1) {
+        qErrors.correctOption = "Exactly one option must be marked as correct";
       }
 
-      // Validate individual choices
-      const choiceErrors = {};
-      question.choices.forEach((choice, cIndex) => {
-        if (!choice.choiceText.trim()) {
-          choiceErrors[cIndex] = "Choice text is required";
-        } else if (choice.choiceText.length > 500) {
-          choiceErrors[cIndex] = "Choice text cannot exceed 500 characters";
+      // Validate individual options
+      const optionErrors = {};
+      question.options.forEach((option, oIndex) => {
+        if (!option.optionText.trim()) {
+          optionErrors[oIndex] = "Option text is required";
+        } else if (option.optionText.length > 900) {
+          optionErrors[oIndex] = "Option text must not exceed 900 characters";
         }
       });
 
-      if (Object.keys(choiceErrors).length) {
-        qErrors.choiceErrors = choiceErrors;
+      if (Object.keys(optionErrors).length) {
+        qErrors.optionErrors = optionErrors;
       }
 
       if (Object.keys(qErrors).length) {
@@ -445,19 +461,18 @@ function CreateQuiz({ isOpen, onClose, onSubmit, isLoading }) {
     if (validateForm()) {
       const submitData = {
         title: formData.title.trim(),
-        description: formData.description.trim() || null,
-        startTime: moment(formData.startTime).format("YYYY-MM-DD HH:mm:ss"),
-        endTime: moment(formData.endTime).format("YYYY-MM-DD HH:mm:ss"),
+        description: formData.description.trim(),
+        startTime: formatDateTimeForSubmit(formData.startTime),
+        endTime: formatDateTimeForSubmit(formData.endTime),
         courseId: formData.courseId,
+        userId: currentUser?.id, // Add userId from context
         questions: formData.questions.map((q) => ({
-          text: q.text.trim(),
-          questionImage: q.questionImage?.trim() || null,
-          correctAnswer: q.correctAnswer.trim(),
+          questionText: q.questionText.trim(),
           points: parseFloat(q.points),
-          choices: q.choices.map((c) => ({
-            choiceText: c.choiceText.trim(),
-            choiceLabel: c.choiceLabel,
-            isCorrect: c.isCorrect,
+          options: q.options.map((o) => ({
+            optionText: o.optionText.trim(),
+            optionSelect: o.optionSelect,
+            isCorrect: o.isCorrect,
           })),
         })),
       };
@@ -476,6 +491,9 @@ function CreateQuiz({ isOpen, onClose, onSubmit, isLoading }) {
     (sum, q) => sum + (parseFloat(q.points) || 0),
     0
   );
+
+  // Get minimum datetime for input (current time + 1 minute)
+  const minDateTime = formatDateTimeForInput(new Date(Date.now() + 60000));
 
   return (
     <Modal
@@ -496,17 +514,17 @@ function CreateQuiz({ isOpen, onClose, onSubmit, isLoading }) {
             onChange={handleInputChange}
             placeholder="Enter quiz title..."
             className={errors.title ? "error" : ""}
-            maxLength={200}
+            maxLength={500}
           />
           {errors.title && (
             <span className="error-message">{errors.title}</span>
           )}
-          <small className="char-count">{formData.title.length}/200</small>
+          <small className="char-count">{formData.title.length}/500</small>
         </div>
 
         {/* Quiz Description */}
         <div className="form-group">
-          <label htmlFor="description">Description (Optional)</label>
+          <label htmlFor="description">Description *</label>
           <textarea
             id="description"
             name="description"
@@ -528,21 +546,20 @@ function CreateQuiz({ isOpen, onClose, onSubmit, isLoading }) {
         {/* Time Fields */}
         <div className="form-row">
           <div className="form-group">
-            <label>
+            <label htmlFor="startTime">
               <Calendar size={16} />
               Start Time *
             </label>
-            <DatePicker
-              selected={formData.startTime}
-              onChange={(date) => handleDateChange(date, "startTime")}
-              showTimeSelect
-              dateFormat="yyyy-MM-dd HH:mm"
-              timeFormat="HH:mm"
-              timeIntervals={15}
-              minDate={new Date()}
-              placeholderText="Select start time..."
-              className={`date-picker ${errors.startTime ? "error" : ""}`}
-              popperClassName="date-picker-popper"
+            <input
+              type="datetime-local"
+              id="startTime"
+              name="startTime"
+              value={formData.startTime}
+              onChange={(e) =>
+                handleDateTimeChange("startTime", e.target.value)
+              }
+              min={minDateTime}
+              className={errors.startTime ? "error" : ""}
             />
             {errors.startTime && (
               <span className="error-message">{errors.startTime}</span>
@@ -550,21 +567,18 @@ function CreateQuiz({ isOpen, onClose, onSubmit, isLoading }) {
           </div>
 
           <div className="form-group">
-            <label>
+            <label htmlFor="endTime">
               <Clock size={16} />
               End Time *
             </label>
-            <DatePicker
-              selected={formData.endTime}
-              onChange={(date) => handleDateChange(date, "endTime")}
-              showTimeSelect
-              dateFormat="yyyy-MM-dd HH:mm"
-              timeFormat="HH:mm"
-              timeIntervals={15}
-              minDate={formData.startTime || new Date()}
-              placeholderText="Select end time..."
-              className={`date-picker ${errors.endTime ? "error" : ""}`}
-              popperClassName="date-picker-popper"
+            <input
+              type="datetime-local"
+              id="endTime"
+              name="endTime"
+              value={formData.endTime}
+              onChange={(e) => handleDateTimeChange("endTime", e.target.value)}
+              min={formData.startTime || minDateTime}
+              className={errors.endTime ? "error" : ""}
             />
             {errors.endTime && (
               <span className="error-message">{errors.endTime}</span>
@@ -706,161 +720,114 @@ function CreateQuiz({ isOpen, onClose, onSubmit, isLoading }) {
               <div className="form-group">
                 <label>Question Text *</label>
                 <textarea
-                  value={question.text}
+                  value={question.questionText}
                   onChange={(e) =>
-                    updateQuestion(question.id, "text", e.target.value)
+                    updateQuestion(question.id, "questionText", e.target.value)
                   }
                   placeholder="Enter question text..."
                   rows="2"
                   className={
-                    errors.questionErrors?.[qIndex]?.text ? "error" : ""
+                    errors.questionErrors?.[qIndex]?.questionText ? "error" : ""
                   }
-                  maxLength={500}
+                  maxLength={2000}
                 />
-                {errors.questionErrors?.[qIndex]?.text && (
+                {errors.questionErrors?.[qIndex]?.questionText && (
                   <span className="error-message">
-                    {errors.questionErrors[qIndex].text}
+                    {errors.questionErrors[qIndex].questionText}
                   </span>
                 )}
-                <small className="char-count">{question.text.length}/500</small>
+                <small className="char-count">
+                  {question.questionText.length}/2000
+                </small>
               </div>
 
-              {/* Question Image */}
+              {/* Points */}
               <div className="form-group">
                 <label>
-                  <ImageIcon size={16} />
-                  Question Image (Optional)
+                  <Award size={16} />
+                  Points *
                 </label>
                 <input
-                  type="text"
-                  value={question.questionImage}
+                  type="number"
+                  value={question.points}
                   onChange={(e) =>
-                    updateQuestion(question.id, "questionImage", e.target.value)
+                    updateQuestion(question.id, "points", e.target.value)
                   }
-                  placeholder="Enter image URL..."
+                  placeholder="Enter points..."
+                  min="0.25"
+                  max="100"
+                  step="0.25"
+                  className={
+                    errors.questionErrors?.[qIndex]?.points ? "error" : ""
+                  }
                 />
+                {errors.questionErrors?.[qIndex]?.points && (
+                  <span className="error-message">
+                    {errors.questionErrors[qIndex].points}
+                  </span>
+                )}
               </div>
 
-              <div className="form-row">
-                {/* Correct Answer */}
-                <div className="form-group">
-                  <label>Correct Answer *</label>
-                  <input
-                    type="text"
-                    value={question.correctAnswer}
-                    onChange={(e) =>
-                      updateQuestion(
-                        question.id,
-                        "correctAnswer",
-                        e.target.value
-                      )
-                    }
-                    placeholder="Enter correct answer..."
-                    className={
-                      errors.questionErrors?.[qIndex]?.correctAnswer
-                        ? "error"
-                        : ""
-                    }
-                    maxLength={200}
-                  />
-                  {errors.questionErrors?.[qIndex]?.correctAnswer && (
-                    <span className="error-message">
-                      {errors.questionErrors[qIndex].correctAnswer}
-                    </span>
-                  )}
-                  <small className="char-count">
-                    {question.correctAnswer.length}/200
-                  </small>
-                </div>
-
-                {/* Points */}
-                <div className="form-group">
+              {/* Options */}
+              <div className="options-section">
+                <div className="options-header">
                   <label>
-                    <Award size={16} />
-                    Points *
-                  </label>
-                  <input
-                    type="number"
-                    value={question.points}
-                    onChange={(e) =>
-                      updateQuestion(question.id, "points", e.target.value)
-                    }
-                    placeholder="Enter points..."
-                    min="0.5"
-                    max="100"
-                    step="0.5"
-                    className={
-                      errors.questionErrors?.[qIndex]?.points ? "error" : ""
-                    }
-                  />
-                  {errors.questionErrors?.[qIndex]?.points && (
-                    <span className="error-message">
-                      {errors.questionErrors[qIndex].points}
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              {/* Choices */}
-              <div className="choices-section">
-                <div className="choices-header">
-                  <label>
-                    Answer Choices * (Select exactly one correct answer)
+                    Answer Options * (Select exactly one correct answer)
                   </label>
                   <button
                     type="button"
-                    onClick={() => addChoice(question.id)}
-                    className="add-choice-btn"
-                    disabled={question.choices.length >= 9}
+                    onClick={() => addOption(question.id)}
+                    className="add-option-btn"
+                    disabled={question.options.length >= 6}
                   >
                     <Plus size={14} />
-                    Add Choice
+                    Add Option
                   </button>
                 </div>
 
-                {errors.questionErrors?.[qIndex]?.choices && (
+                {errors.questionErrors?.[qIndex]?.options && (
                   <span className="error-message">
-                    {errors.questionErrors[qIndex].choices}
+                    {errors.questionErrors[qIndex].options}
                   </span>
                 )}
 
-                {errors.questionErrors?.[qIndex]?.correctChoice && (
+                {errors.questionErrors?.[qIndex]?.correctOption && (
                   <span className="error-message">
-                    {errors.questionErrors[qIndex].correctChoice}
+                    {errors.questionErrors[qIndex].correctOption}
                   </span>
                 )}
 
-                {question.choices.map((choice, cIndex) => (
-                  <div key={choice.id} className="choice-item">
-                    <div className="choice-label">{choice.choiceLabel}</div>
+                {question.options.map((option, oIndex) => (
+                  <div key={option.id} className="option-item">
+                    <div className="option-label">{option.optionSelect}</div>
                     <input
                       type="text"
-                      value={choice.choiceText}
+                      value={option.optionText}
                       onChange={(e) =>
-                        updateChoice(
+                        updateOption(
                           question.id,
-                          choice.id,
-                          "choiceText",
+                          option.id,
+                          "optionText",
                           e.target.value
                         )
                       }
-                      placeholder={`Choice ${choice.choiceLabel}...`}
+                      placeholder={`Option ${option.optionSelect}...`}
                       className={
-                        errors.questionErrors?.[qIndex]?.choiceErrors?.[cIndex]
+                        errors.questionErrors?.[qIndex]?.optionErrors?.[oIndex]
                           ? "error"
                           : ""
                       }
-                      maxLength={500}
+                      maxLength={900}
                     />
-                    <div className="choice-actions">
+                    <div className="option-actions">
                       <label className="correct-checkbox">
                         <input
                           type="checkbox"
-                          checked={choice.isCorrect}
+                          checked={option.isCorrect}
                           onChange={(e) =>
-                            updateChoice(
+                            updateOption(
                               question.id,
-                              choice.id,
+                              option.id,
                               "isCorrect",
                               e.target.checked
                             )
@@ -868,26 +835,26 @@ function CreateQuiz({ isOpen, onClose, onSubmit, isLoading }) {
                         />
                         <span>Correct</span>
                       </label>
-                      {question.choices.length > 2 && (
+                      {question.options.length > 2 && (
                         <button
                           type="button"
-                          onClick={() => removeChoice(question.id, choice.id)}
-                          className="remove-choice-btn"
-                          title="Remove Choice"
+                          onClick={() => removeOption(question.id, option.id)}
+                          className="remove-option-btn"
+                          title="Remove Option"
                         >
                           <Trash2 size={14} />
                         </button>
                       )}
                     </div>
-                    {errors.questionErrors?.[qIndex]?.choiceErrors?.[
-                      cIndex
+                    {errors.questionErrors?.[qIndex]?.optionErrors?.[
+                      oIndex
                     ] && (
                       <span className="error-message">
-                        {errors.questionErrors[qIndex].choiceErrors[cIndex]}
+                        {errors.questionErrors[qIndex].optionErrors[oIndex]}
                       </span>
                     )}
                     <small className="char-count">
-                      {choice.choiceText.length}/500
+                      {option.optionText.length}/900
                     </small>
                   </div>
                 ))}

@@ -1,5 +1,6 @@
 package com.mostafa.lms_api.model;
 
+
 import com.mostafa.lms_api.base.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -16,17 +17,12 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Question extends BaseEntity<UUID> {
-    @Column(name = "text", nullable = false)
-    private String text;
+    @Column(name = "question_text", nullable = false, columnDefinition = "TEXT")
+    private String questionText;
 
-    @Column(name = "question_image")
-    private String questionImage;
-
-    @Column(name = "user_answer")
-    private String userAnswer; // Student's selected answer
-
-    @Column(name = "points")
-    private Double points;
+    @Column(name = "points", nullable = false)
+    @Builder.Default
+    private Double points = 1.0; // Instructor sets points for each question
 
 
     // Relationships
@@ -34,31 +30,11 @@ public class Question extends BaseEntity<UUID> {
     @JoinColumn(name = "quiz_id", nullable = false)
     private Quiz quiz;
 
-    @OneToMany(mappedBy = "question", fetch = FetchType.LAZY,
-            cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Choice> choices;
+    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<QuestionOption> options;
 
-
-    // Helper method to get correct answer label
-    public String getCorrectAnswerLabel() {
-        if (choices == null || choices.isEmpty()) {
-            return null;
-        }
-        return choices.stream()
-                .filter(Choice::getIsCorrect)
-                .findFirst()
-                .map(Choice::getChoiceLabel)
-                .orElse(null);
-    }
-    
-    // Helper method to check if user answer is correct
-    public boolean isUserAnswerCorrect() {
-        if (userAnswer == null || userAnswer.trim().isEmpty()) {
-            return false;
-        }
-        String correctLabel = getCorrectAnswerLabel();
-        return userAnswer.trim().equalsIgnoreCase(correctLabel);
-    }
+    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL)
+    private List<UserAnswer> userAnswers;
 
 
 }

@@ -88,6 +88,16 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Progress> progressList; // for Student
 
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<Quiz> quizzesCreated; // for Instructor
+    
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<UserAnswer> userAnswers; // for Student answers
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<QuizAttempt> quizAttempts; // for Student quiz attempts
+
+
     //  ************************************************************************************    //
     //    Implements Functions
     @Override

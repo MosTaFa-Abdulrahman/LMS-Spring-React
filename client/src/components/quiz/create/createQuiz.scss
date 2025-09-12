@@ -6,25 +6,6 @@
   overflow-y: auto;
   padding-right: 8px;
 
-  // Add to your createQuiz.scss
-  .date-picker {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    border: 2px solid;
-    border-radius: 10px;
-    font-size: 1rem;
-
-    @include themed() {
-      background-color: t(input-bg);
-      color: t(text-primary);
-      border-color: t(input-border);
-    }
-  }
-
-  .date-picker-popper {
-    z-index: 9999;
-  }
-
   // Custom scrollbar
   &::-webkit-scrollbar {
     width: 6px;
@@ -135,6 +116,21 @@
       }
     }
 
+    // Datetime input specific styles
+    input[type="datetime-local"] {
+      color-scheme: light dark;
+
+      &::-webkit-calendar-picker-indicator {
+        cursor: pointer;
+        opacity: 0.6;
+        transition: opacity 0.2s ease;
+
+        &:hover {
+          opacity: 1;
+        }
+      }
+    }
+
     textarea {
       resize: vertical;
       min-height: 80px;
@@ -168,6 +164,27 @@
           opacity: 1;
           transform: translateY(0);
         }
+      }
+    }
+
+    .char-count {
+      display: block;
+      font-size: 0.75rem;
+      margin-top: 0.25rem;
+      text-align: right;
+
+      @include themed() {
+        color: t(text-secondary);
+      }
+
+      &.near-limit {
+        color: #f59e0b;
+        font-weight: 600;
+      }
+
+      &.at-limit {
+        color: #ef4444;
+        font-weight: 700;
       }
     }
 
@@ -561,6 +578,15 @@
         @include themed() {
           color: t(text-primary);
         }
+
+        .total-points {
+          font-size: 0.9rem;
+          font-weight: 500;
+
+          @include themed() {
+            color: t(text-secondary);
+          }
+        }
       }
 
       .add-question-btn {
@@ -611,6 +637,28 @@
         svg {
           width: 16px;
           height: 16px;
+        }
+      }
+    }
+
+    .empty-questions {
+      text-align: center;
+      padding: 3rem 1rem;
+      border-radius: 12px;
+      border: 2px dashed;
+      margin: 2rem 0;
+
+      @include themed() {
+        border-color: t(border-color);
+        background-color: t(bg-hover);
+      }
+
+      p {
+        margin: 0;
+        font-size: 1rem;
+
+        @include themed() {
+          color: t(text-secondary);
         }
       }
     }
@@ -725,10 +773,10 @@
         }
       }
 
-      .choices-section {
+      .options-section {
         margin-top: 1.5rem;
 
-        .choices-header {
+        .options-header {
           display: flex;
           justify-content: space-between;
           align-items: center;
@@ -740,7 +788,7 @@
             font-weight: 600;
           }
 
-          .add-choice-btn {
+          .add-option-btn {
             display: flex;
             align-items: center;
             gap: 0.3rem;
@@ -777,7 +825,7 @@
           }
         }
 
-        .choice-item {
+        .option-item {
           display: flex;
           align-items: center;
           gap: 0.75rem;
@@ -799,7 +847,7 @@
             transform: translateX(2px);
           }
 
-          .choice-label {
+          .option-label {
             display: flex;
             align-items: center;
             justify-content: center;
@@ -817,7 +865,7 @@
             }
           }
 
-          &:hover .choice-label {
+          &:hover .option-label {
             transform: scale(1.1);
           }
 
@@ -844,7 +892,7 @@
             }
           }
 
-          .choice-actions {
+          .option-actions {
             display: flex;
             align-items: center;
             gap: 0.75rem;
@@ -886,7 +934,7 @@
               }
             }
 
-            .remove-choice-btn {
+            .remove-option-btn {
               display: flex;
               align-items: center;
               justify-content: center;
@@ -919,11 +967,20 @@
             }
           }
 
+          .char-count {
+            position: absolute;
+            bottom: -1.2rem;
+            left: 48px;
+            font-size: 0.7rem;
+            margin: 0;
+          }
+
           .error-message {
             position: absolute;
             bottom: -1.5rem;
             left: 48px;
             font-size: 0.75rem;
+            margin: 0;
           }
         }
       }
@@ -1047,13 +1104,13 @@
         }
       }
 
-      .choices-section {
-        .choice-item {
+      .options-section {
+        .option-item {
           flex-direction: column;
           align-items: stretch;
           gap: 0.5rem;
 
-          .choice-label {
+          .option-label {
             align-self: flex-start;
           }
 
@@ -1061,9 +1118,16 @@
             margin-left: 0;
           }
 
-          .choice-actions {
+          .option-actions {
             justify-content: space-between;
             margin-top: 0.5rem;
+          }
+
+          .char-count {
+            position: static;
+            margin-top: 0.5rem;
+            margin-left: 0;
+            text-align: left;
           }
 
           .error-message {
@@ -1158,9 +1222,9 @@
   @media print {
     .form-actions,
     .remove-question-btn,
-    .remove-choice-btn,
+    .remove-option-btn,
     .add-question-btn,
-    .add-choice-btn {
+    .add-option-btn {
       display: none !important;
     }
 
