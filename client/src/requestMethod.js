@@ -1,6 +1,7 @@
 import axios from "axios";
 
-const BASE_URL = "http://localhost:8080/api/";
+// const BASE_URL = "http://localhost:8080/api/";
+const BASE_URL = "https://lms-spring-api.vercel.app/api/";
 
 export const makeRequest = axios.create({
   baseURL: BASE_URL,

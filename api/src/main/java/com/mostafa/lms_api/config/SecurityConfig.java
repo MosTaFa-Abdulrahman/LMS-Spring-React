@@ -1,6 +1,5 @@
 package com.mostafa.lms_api.config;
 
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,7 +22,6 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
-
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -37,7 +35,6 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -49,8 +46,8 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> {
                     auth.requestMatchers(
-                                    "/api/auth/register",
-                                    "/api/auth/login").permitAll()
+                            "/api/auth/register",
+                            "/api/auth/login").permitAll()
                             // Swagger/OpenAPI endpoints
                             .requestMatchers(
                                     "/swagger-ui/**",
@@ -63,7 +60,7 @@ public class SecurityConfig {
                             // logout/me
                             .requestMatchers(HttpMethod.GET, "/api/auth/me").authenticated()
                             .requestMatchers(HttpMethod.POST, "/api/auth/logout").authenticated()
-                            //  ((Users))  //
+                            // ((Users)) //
                             .requestMatchers(HttpMethod.PUT, "/api/users/{userId}").authenticated()
                             .requestMatchers(HttpMethod.DELETE, "/api/users/{userId}").authenticated()
                             .requestMatchers(HttpMethod.GET, "/api/users").hasAnyRole("ADMIN", "INSTRUCTOR")
@@ -74,61 +71,75 @@ public class SecurityConfig {
                             .requestMatchers(HttpMethod.GET, "/api/users/{userId}/followings/count").authenticated()
                             .requestMatchers(HttpMethod.GET, "/api/users/{userId}/followers").authenticated()
                             .requestMatchers(HttpMethod.GET, "/api/users/{userId}/followings").authenticated()
-                            //  ((Courses))  //
+                            // ((Courses)) //
                             .requestMatchers(HttpMethod.POST, "/api/courses").hasAnyRole("ADMIN", "INSTRUCTOR")
-                            .requestMatchers(HttpMethod.PUT, "/api/courses/{courseId}").hasAnyRole("ADMIN", "INSTRUCTOR")
-                            .requestMatchers(HttpMethod.DELETE, "/api/courses/{courseId}").hasAnyRole("ADMIN", "INSTRUCTOR")
+                            .requestMatchers(HttpMethod.PUT, "/api/courses/{courseId}")
+                            .hasAnyRole("ADMIN", "INSTRUCTOR")
+                            .requestMatchers(HttpMethod.DELETE, "/api/courses/{courseId}")
+                            .hasAnyRole("ADMIN", "INSTRUCTOR")
                             .requestMatchers(HttpMethod.GET, "/api/courses").authenticated()
                             .requestMatchers(HttpMethod.GET, "/api/courses/search").authenticated()
                             .requestMatchers(HttpMethod.GET, "/api/courses/{courseId}").authenticated()
-//                            Create Course Transactional
-                            .requestMatchers(HttpMethod.POST, "/api/courses/transaction").hasAnyRole("ADMIN", "INSTRUCTOR")
+                            // Create Course Transactional
+                            .requestMatchers(HttpMethod.POST, "/api/courses/transaction")
+                            .hasAnyRole("ADMIN", "INSTRUCTOR")
 
-
-                            //  ((Sections))  //
+                            // ((Sections)) //
                             .requestMatchers(HttpMethod.POST, "/api/sections").hasAnyRole("ADMIN", "INSTRUCTOR")
-                            .requestMatchers(HttpMethod.PUT, "/api/sections/{sectionId}").hasAnyRole("ADMIN", "INSTRUCTOR")
-                            .requestMatchers(HttpMethod.DELETE, "/api/sections/{sectionId}").hasAnyRole("ADMIN", "INSTRUCTOR")
+                            .requestMatchers(HttpMethod.PUT, "/api/sections/{sectionId}")
+                            .hasAnyRole("ADMIN", "INSTRUCTOR")
+                            .requestMatchers(HttpMethod.DELETE, "/api/sections/{sectionId}")
+                            .hasAnyRole("ADMIN", "INSTRUCTOR")
                             .requestMatchers(HttpMethod.GET, "/api/sections/course/{courseId}").authenticated()
-                            //  ((Videos))  //
+                            // ((Videos)) //
                             .requestMatchers(HttpMethod.POST, "/api/videos").hasAnyRole("ADMIN", "INSTRUCTOR")
                             .requestMatchers(HttpMethod.PUT, "/api/videos/{videoId}").hasAnyRole("ADMIN", "INSTRUCTOR")
-                            .requestMatchers(HttpMethod.DELETE, "/api/videos/{videoId}").hasAnyRole("ADMIN", "INSTRUCTOR")
+                            .requestMatchers(HttpMethod.DELETE, "/api/videos/{videoId}")
+                            .hasAnyRole("ADMIN", "INSTRUCTOR")
                             .requestMatchers(HttpMethod.GET, "/api/videos/section/{sectionId}").authenticated()
-                            //  ((Files))  //
+                            // ((Files)) //
                             .requestMatchers(HttpMethod.POST, "/api/files").hasAnyRole("ADMIN", "INSTRUCTOR")
                             .requestMatchers(HttpMethod.PUT, "/api/files/{fileId}").hasAnyRole("ADMIN", "INSTRUCTOR")
                             .requestMatchers(HttpMethod.DELETE, "/api/files/{fileId}").hasAnyRole("ADMIN", "INSTRUCTOR")
                             .requestMatchers(HttpMethod.GET, "/api/files/section/{sectionId}").authenticated()
 
-                            //  ((Progress))  //
-//                            Create OR Update
-                            .requestMatchers(HttpMethod.PUT, "/api/progress/videos/{videoId}").hasAnyRole("USER", "INSTRUCTOR")
-//                              Course-Progress
-                            .requestMatchers(HttpMethod.GET, "/api/progress/videos/{videoId}").hasAnyRole("USER", "INSTRUCTOR")
-                            .requestMatchers(HttpMethod.GET, "/api/progress/courses/{courseId}").hasAnyRole("ADMIN", "USER", "INSTRUCTOR")
-//                            User-Progress
+                            // ((Progress)) //
+                            // Create OR Update
+                            .requestMatchers(HttpMethod.PUT, "/api/progress/videos/{videoId}")
+                            .hasAnyRole("USER", "INSTRUCTOR")
+                            // Course-Progress
+                            .requestMatchers(HttpMethod.GET, "/api/progress/videos/{videoId}")
+                            .hasAnyRole("USER", "INSTRUCTOR")
+                            .requestMatchers(HttpMethod.GET, "/api/progress/courses/{courseId}")
+                            .hasAnyRole("ADMIN", "USER", "INSTRUCTOR")
+                            // User-Progress
                             .requestMatchers(HttpMethod.GET, "/api/progress/my-progress").authenticated()
-//                            Mark Video-Completed
-                            .requestMatchers(HttpMethod.PATCH, "/api/progress/videos/{videoId}/complete").authenticated()
-//                            Instructor Analytics
-                            .requestMatchers(HttpMethod.GET, "/api/progress/courses/{courseId}/analytics").hasAnyRole("INSTRUCTOR", "ADMIN")
-                            .requestMatchers(HttpMethod.GET, "/api/progress/courses/{courseId}/completed-users").hasAnyRole("INSTRUCTOR", "ADMIN")
+                            // Mark Video-Completed
+                            .requestMatchers(HttpMethod.PATCH, "/api/progress/videos/{videoId}/complete")
+                            .authenticated()
+                            // Instructor Analytics
+                            .requestMatchers(HttpMethod.GET, "/api/progress/courses/{courseId}/analytics")
+                            .hasAnyRole("INSTRUCTOR", "ADMIN")
+                            .requestMatchers(HttpMethod.GET, "/api/progress/courses/{courseId}/completed-users")
+                            .hasAnyRole("INSTRUCTOR", "ADMIN")
 
-                            //  ((Enrollments))  //
-                            .requestMatchers(HttpMethod.POST, "/api/enrollments").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
+                            // ((Enrollments)) //
+                            .requestMatchers(HttpMethod.POST, "/api/enrollments")
+                            .hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
                             .requestMatchers(HttpMethod.GET, "/api/enrollments/user/{userId}").authenticated()
                             .requestMatchers(HttpMethod.GET, "/api/enrollments/section/{sectionId}").authenticated()
-                            //  ((Quizzes))
+                            // ((Quizzes))
                             .requestMatchers(HttpMethod.POST, "/api/quizzes").hasAnyRole("ADMIN", "INSTRUCTOR")
                             .requestMatchers(HttpMethod.PUT, "/api/quizzes/{quizId}").hasAnyRole("ADMIN", "INSTRUCTOR")
-                            .requestMatchers(HttpMethod.DELETE, "/api/quizzes/{quizId}").hasAnyRole("ADMIN", "INSTRUCTOR")
+                            .requestMatchers(HttpMethod.DELETE, "/api/quizzes/{quizId}")
+                            .hasAnyRole("ADMIN", "INSTRUCTOR")
                             .requestMatchers(HttpMethod.GET, "/api/quizzes").authenticated()
                             .requestMatchers(HttpMethod.GET, "/api/quizzes/{quizId}/take").authenticated()
                             .requestMatchers(HttpMethod.GET, "/api/quizzes/{quizId}").hasAnyRole("ADMIN", "INSTRUCTOR")
                             .requestMatchers(HttpMethod.POST, "/api/quizzes/{quizId}/submit").authenticated()
                             .requestMatchers(HttpMethod.GET, "/api/quizzes/my-attempts").authenticated()
-                            .requestMatchers(HttpMethod.GET, "/api/quizzes/user/{userId}/attempts").hasAnyRole("ADMIN", "INSTRUCTOR")
+                            .requestMatchers(HttpMethod.GET, "/api/quizzes/user/{userId}/attempts")
+                            .hasAnyRole("ADMIN", "INSTRUCTOR")
                             .anyRequest()
                             .authenticated();
 
@@ -139,7 +150,6 @@ public class SecurityConfig {
         return http.build();
     }
 
-
     @Bean
     AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
         var authBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
@@ -148,11 +158,11 @@ public class SecurityConfig {
         return authBuilder.build();
     }
 
-
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:3000"));
+        configuration.setAllowedOrigins(List.of("https://lms-fipxdpbl3-mostafas-projects-f004e271.vercel.app",
+                "http://localhost:5173", "http://localhost:3000"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
@@ -161,6 +171,5 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
-
 
 }
