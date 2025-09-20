@@ -2,7 +2,7 @@
 
 > A **full-featured Udemy-like LMS** built with **Spring Boot + React.js** 🚀  
 
-![LMS Banner](https://plus.unsplash.com/premium_photo-1669075651663-3f264ed78316?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8TE1TJTIwQkFOTkVSfGVufDB8fDB8fHww)  
+![LMS Banner]()  
 *(Built with ❤️ by Mustafa Abdelrahman)*  
 
 🔗 **Demo Video:** [Watch on LinkedIn](https://www.linkedin.com/posts/mustafa-abdelrahman-86ba06366_learning-management-system-spring-boot-activity-7375289113496866817-HPYT/?utm_source=share&utm_medium=member_desktop&rcm=ACoAAFrrBVMB6rqpWi20p28YzbRTV680oenITWE)  
@@ -119,16 +119,6 @@
 - 🎨 Lucide React → modern icons  
 - 🕒 Moment.js → time formatting (`2h ago`)  
 - 🎭 SCSS (Sass) → responsive & themable design  
-
----
-
-## 📸 Screenshots  
-
-> *(Add screenshots of your app UI here!)*  
-
-| Landing Page | Dashboard | Course Page | Quiz Page |
-|--------------|-----------|-------------|-----------|
-| ![Landing](https://via.placeholder.com/300x200) | ![Dashboard](https://via.placeholder.com/300x200) | ![Course](https://via.placeholder.com/300x200) | ![Quiz](https://via.placeholder.com/300x200) |
 
 ---
 
