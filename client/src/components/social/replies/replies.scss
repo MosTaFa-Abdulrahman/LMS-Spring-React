@@ -1,0 +1,468 @@
+@import "../../../styles/responsive.scss";
+@import "../../../styles/themes.scss";
+
+.replies {
+  margin-top: 16px;
+  padding-left: 20px;
+  position: relative;
+
+  @include themed() {
+    border-left: 2px solid t(border-color);
+  }
+
+  @include md {
+    padding-left: 16px;
+    margin-top: 12px;
+  }
+
+  @include sm {
+    padding-left: 12px;
+    margin-top: 10px;
+  }
+
+  // Decorative line accent
+  &::before {
+    content: "";
+    position: absolute;
+    left: -2px;
+    top: 0;
+    width: 2px;
+    height: 40px;
+
+    @include themed() {
+      background: linear-gradient(to bottom, t(button-primary), transparent);
+    }
+
+    @include sm {
+      height: 30px;
+    }
+  }
+
+  // Loading state for replies
+  .replies-loading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 0;
+
+    @include themed() {
+      color: t(text-secondary);
+    }
+
+    span {
+      font-size: 13px;
+
+      @include sm {
+        font-size: 12px;
+      }
+    }
+  }
+
+  // Individual reply
+  .reply {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding: 16px;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+    animation: fadeIn 0.2s ease-out;
+
+    @include themed() {
+      background-color: t(bg-secondary);
+      border: 1px solid t(border-color);
+    }
+
+    &:hover {
+      @include themed() {
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+      }
+    }
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    @include md {
+      padding: 12px;
+      gap: 10px;
+    }
+
+    @include sm {
+      padding: 10px;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .reply-avatar {
+      flex-shrink: 0;
+
+      img {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        object-fit: cover;
+
+        @include themed() {
+          border: 2px solid t(border-color);
+        }
+
+        @include md {
+          width: 32px;
+          height: 32px;
+        }
+
+        @include sm {
+          width: 28px;
+          height: 28px;
+        }
+      }
+    }
+
+    .reply-content {
+      flex: 1;
+      min-width: 0;
+
+      .reply-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 6px;
+
+        .user-info {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+
+          @include sm {
+            gap: 8px;
+          }
+
+          .username {
+            font-weight: 600;
+            font-size: 14px;
+
+            @include themed() {
+              color: t(text-primary);
+            }
+
+            @include sm {
+              font-size: 13px;
+            }
+          }
+
+          .timestamp {
+            font-size: 12px;
+            opacity: 0.8;
+
+            @include themed() {
+              color: t(text-secondary);
+            }
+
+            @include sm {
+              font-size: 11px;
+            }
+          }
+        }
+
+        .reply-menu {
+          position: relative;
+
+          .menu-trigger {
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            opacity: 0.6;
+
+            @include themed() {
+              color: t(text-secondary);
+            }
+
+            &:hover {
+              opacity: 1;
+
+              @include themed() {
+                background-color: t(bg-hover);
+                color: t(text-primary);
+              }
+            }
+
+            &:disabled {
+              cursor: not-allowed;
+              opacity: 0.3;
+            }
+          }
+
+          .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            z-index: 10;
+            min-width: 100px;
+            animation: fadeIn 0.2s ease-out;
+
+            @include themed() {
+              background-color: t(card-bg);
+              border: 1px solid t(border-color);
+            }
+
+            .menu-item {
+              width: 100%;
+              padding: 8px 12px;
+              border: none;
+              background: transparent;
+              cursor: pointer;
+              display: flex;
+              align-items: center;
+              gap: 6px;
+              font-size: 12px;
+              transition: all 0.2s ease;
+
+              @include themed() {
+                color: t(text-primary);
+              }
+
+              &:hover {
+                @include themed() {
+                  background-color: t(bg-hover);
+                }
+              }
+
+              &.delete-item {
+                color: #ef4444;
+
+                &:hover {
+                  background-color: rgba(239, 68, 68, 0.1);
+                }
+              }
+
+              &:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+              }
+            }
+          }
+        }
+      }
+
+      .reply-text {
+        margin-bottom: 10px;
+
+        p {
+          margin: 0;
+          line-height: 1.5;
+          font-size: 13px;
+          word-wrap: break-word;
+
+          @include themed() {
+            color: t(text-primary);
+          }
+
+          @include sm {
+            font-size: 12px;
+          }
+        }
+      }
+
+      .reply-actions {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+
+        @include sm {
+          gap: 12px;
+        }
+
+        .action-btn {
+          border: none;
+          background: transparent;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: 5px;
+          padding: 4px 8px;
+          border-radius: 6px;
+          font-size: 12px;
+          font-weight: 500;
+          transition: all 0.2s ease;
+
+          @include themed() {
+            color: t(text-secondary);
+          }
+
+          @include sm {
+            padding: 3px 6px;
+            font-size: 11px;
+          }
+
+          &:hover {
+            @include themed() {
+              background-color: t(bg-hover);
+              color: t(text-primary);
+            }
+          }
+
+          &.like-btn {
+            &.liked {
+              color: #ef4444;
+
+              &:hover {
+                color: #dc2626;
+                background-color: rgba(239, 68, 68, 0.1);
+              }
+            }
+
+            &:hover {
+              transform: scale(1.05);
+            }
+
+            &:active {
+              transform: scale(0.95);
+            }
+          }
+
+          &:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+          }
+        }
+      }
+    }
+  }
+
+  // Load more button
+  .load-more-replies-btn,
+  .show-all-replies-btn {
+    width: 100%;
+    margin-top: 12px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+
+    @include themed() {
+      background-color: t(bg-hover);
+      color: t(text-primary);
+      border: 1px solid t(border-color);
+    }
+
+    &:hover {
+      @include themed() {
+        background-color: t(bg-active);
+        border-color: t(button-primary);
+      }
+
+      transform: translateY(-1px);
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+      transform: none !important;
+    }
+
+    @include md {
+      padding: 6px 12px;
+      font-size: 12px;
+    }
+
+    @include sm {
+      padding: 6px 10px;
+      font-size: 12px;
+    }
+  }
+
+  .show-all-replies-btn {
+    @include themed() {
+      background-color: t(button-primary);
+      color: white;
+      border: 1px solid t(button-primary);
+    }
+
+    &:hover {
+      @include themed() {
+        background-color: t(button-hover);
+        border-color: t(button-hover);
+      }
+    }
+  }
+
+  // No replies state
+  .no-replies {
+    text-align: center;
+    padding: 20px;
+
+    @include md {
+      padding: 16px;
+    }
+
+    @include sm {
+      padding: 12px;
+    }
+
+    p {
+      margin: 0;
+      font-size: 13px;
+      opacity: 0.8;
+
+      @include themed() {
+        color: t(text-secondary);
+      }
+
+      @include sm {
+        font-size: 12px;
+      }
+    }
+  }
+
+  // Error state
+  .error-state {
+    text-align: center;
+    padding: 16px;
+    border-radius: 8px;
+
+    @include themed() {
+      background-color: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    @include md {
+      padding: 12px;
+    }
+
+    p {
+      margin: 0;
+      color: #ef4444;
+      font-size: 13px;
+
+      @include sm {
+        font-size: 12px;
+      }
+    }
+  }
+}
+
+// Animation keyframes
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

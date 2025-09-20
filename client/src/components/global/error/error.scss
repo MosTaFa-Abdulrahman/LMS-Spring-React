@@ -1,0 +1,140 @@
+@import "../../../styles/responsive.scss";
+@import "../../../styles/themes.scss";
+
+// .error {
+//   display: flex;
+//   flex-direction: column;
+//   align-items: center;
+//   justify-content: center;
+//   text-align: center;
+//   padding: 40px 20px;
+//   border-radius: 12px;
+
+//   @include themify($themes) {
+//     background-color: themed("bgSoft");
+//     border: 1px solid themed("border");
+//   }
+
+//   &--small {
+//     padding: 20px 15px;
+//     gap: 8px;
+
+//     .error__icon {
+//       width: 24px;
+//       height: 24px;
+//     }
+
+//     .error__title {
+//       font-size: 16px;
+//     }
+
+//     .error__message {
+//       font-size: 14px;
+//     }
+//   }
+
+//   &--medium {
+//     padding: 40px 20px;
+//     gap: 12px;
+
+//     .error__icon {
+//       width: 48px;
+//       height: 48px;
+//     }
+
+//     .error__title {
+//       font-size: 20px;
+//     }
+
+//     .error__message {
+//       font-size: 16px;
+//     }
+//   }
+
+//   &--large {
+//     padding: 60px 40px;
+//     gap: 16px;
+
+//     .error__icon {
+//       width: 64px;
+//       height: 64px;
+//     }
+
+//     .error__title {
+//       font-size: 24px;
+//     }
+
+//     .error__message {
+//       font-size: 18px;
+//     }
+//   }
+
+//   &__icon {
+//     color: #ef4444;
+//     margin-bottom: 8px;
+//   }
+
+//   &__title {
+//     margin: 0;
+//     font-weight: 600;
+
+//     @include themify($themes) {
+//       color: themed("textColor");
+//     }
+//   }
+
+//   &__message {
+//     margin: 0;
+//     max-width: 400px;
+//     line-height: 1.5;
+
+//     @include themify($themes) {
+//       color: themed("textColorSoft");
+//     }
+//   }
+
+//   &__retry-btn {
+//     display: flex;
+//     align-items: center;
+//     gap: 8px;
+//     padding: 12px 24px;
+//     border: none;
+//     border-radius: 8px;
+//     font-weight: 500;
+//     cursor: pointer;
+//     transition: all 0.2s ease;
+//     margin-top: 16px;
+
+//     @include themify($themes) {
+//       background-color: themed("logo");
+//       color: white;
+//     }
+
+//     &:hover {
+//       transform: translateY(-1px);
+//       filter: brightness(1.1);
+//     }
+
+//     &:active {
+//       transform: translateY(0);
+//     }
+//   }
+
+//   &__retry-icon {
+//     width: 16px;
+//     height: 16px;
+//   }
+
+//   @include mobile {
+//     padding: 30px 15px;
+
+//     &__message {
+//       font-size: 14px;
+//     }
+
+//     &__retry-btn {
+//       padding: 10px 20px;
+//       font-size: 14px;
+//     }
+//   }
+// }

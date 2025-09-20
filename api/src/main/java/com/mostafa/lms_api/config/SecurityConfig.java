@@ -46,8 +46,8 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> {
                     auth.requestMatchers(
-                            "/api/auth/register",
-                            "/api/auth/login").permitAll()
+                                    "/api/auth/register",
+                                    "/api/auth/login").permitAll()
                             // Swagger/OpenAPI endpoints
                             .requestMatchers(
                                     "/swagger-ui/**",
@@ -140,6 +140,33 @@ public class SecurityConfig {
                             .requestMatchers(HttpMethod.GET, "/api/quizzes/my-attempts").authenticated()
                             .requestMatchers(HttpMethod.GET, "/api/quizzes/user/{userId}/attempts")
                             .hasAnyRole("ADMIN", "INSTRUCTOR")
+
+
+                            //  ((Posts))  //
+                            .requestMatchers(HttpMethod.POST, "/api/posts").authenticated()
+                            .requestMatchers(HttpMethod.PUT, "/api/posts/{postId}").authenticated()
+                            .requestMatchers(HttpMethod.DELETE, "/api/posts/{postId}").authenticated()
+                            .requestMatchers(HttpMethod.GET, "/api/posts").authenticated()
+                            .requestMatchers(HttpMethod.GET, "/api/posts/{postId}").authenticated()
+                            .requestMatchers(HttpMethod.POST, "/api/posts/{postId}/like").authenticated()
+                            .requestMatchers(HttpMethod.GET, "/api/posts/user/{userId}").authenticated()
+                            //  ((Comments))  //
+                            .requestMatchers(HttpMethod.POST, "/api/comments").authenticated()
+                            .requestMatchers(HttpMethod.DELETE, "/api/comments/{commentId}").authenticated()
+                            .requestMatchers(HttpMethod.GET, "/api/comments/{commentId}").authenticated()
+                            .requestMatchers(HttpMethod.GET, "/api/comments/post/{postId}").authenticated()
+                            .requestMatchers(HttpMethod.POST, "/api/comments/{commentId}/like").authenticated()
+                            //  ((Replies))  //
+                            .requestMatchers(HttpMethod.POST, "/api/replies").authenticated()
+                            .requestMatchers(HttpMethod.DELETE, "/api/replies/{replyId}").authenticated()
+                            .requestMatchers(HttpMethod.GET, "/api/replies/comment/{commentId}").authenticated()
+                            .requestMatchers(HttpMethod.POST, "/api/replies/{replyId}/like").authenticated()
+                            //  ((Notifications))  //
+                            .requestMatchers(HttpMethod.GET, "/api/notifications").authenticated()
+                            .requestMatchers(HttpMethod.DELETE, "/api/notifications/{notificationId}").authenticated()
+                            .requestMatchers(HttpMethod.GET, "/api/notifications/unread-count").authenticated()
+                            .requestMatchers(HttpMethod.PUT, "/api/notifications/read/{id}").authenticated()
+                            .requestMatchers(HttpMethod.PUT, "/api/notifications/read-all").authenticated()
                             .anyRequest()
                             .authenticated();
 

@@ -20,6 +20,7 @@ import NotFound from "./pages/notFound/NotFound";
 import Home from "./pages/home/Home";
 import Courses from "./pages/courses/Courses";
 import Course from "./pages/course/Course";
+import Posts from "./pages/posts/Posts";
 import SingleUser from "./pages/singleUser/SingleUser";
 import Quizzes from "./pages/Quizzes/Quizzes";
 import Quiz from "./pages/quiz/Quiz";
@@ -90,6 +91,10 @@ function App() {
         {
           path: "/courses",
           element: <AuthenticatedRoute element={<Courses />} />,
+        },
+        {
+          path: "/posts",
+          element: <AuthenticatedRoute element={<Posts />} />,
         },
         {
           path: "/courses/:id",

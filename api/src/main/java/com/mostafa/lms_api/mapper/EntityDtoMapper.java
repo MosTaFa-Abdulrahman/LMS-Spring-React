@@ -1,15 +1,22 @@
 package com.mostafa.lms_api.mapper;
 
+import com.mostafa.lms_api.dto.comment.CommentResponseDTO;
+import com.mostafa.lms_api.dto.comment.CreateCommentDTO;
 import com.mostafa.lms_api.dto.course.CourseResponseDTO;
 import com.mostafa.lms_api.dto.course.CourseSummaryDTO;
 import com.mostafa.lms_api.dto.course.CreateCourseDTO;
 import com.mostafa.lms_api.dto.enrollment.EnrollmentResponseDTO;
 import com.mostafa.lms_api.dto.file.CreateFileDTO;
 import com.mostafa.lms_api.dto.file.FileResponseDTO;
+import com.mostafa.lms_api.dto.notification.NotificationDTO;
+import com.mostafa.lms_api.dto.post.CreatePostDTO;
+import com.mostafa.lms_api.dto.post.PostResponseDTO;
 import com.mostafa.lms_api.dto.progress.ProgressResponseDTO;
 import com.mostafa.lms_api.dto.quiz.create.CreateQuizDTO;
 import com.mostafa.lms_api.dto.quiz.get.*;
 import com.mostafa.lms_api.dto.quiz.update.UpdateQuizDTO;
+import com.mostafa.lms_api.dto.reply.CreateReplyDTO;
+import com.mostafa.lms_api.dto.reply.ReplyResponseDTO;
 import com.mostafa.lms_api.dto.section.CreateSectionDTO;
 import com.mostafa.lms_api.dto.section.SectionResponseDTO;
 import com.mostafa.lms_api.dto.section.SectionSummaryDTO;
@@ -594,6 +601,102 @@ public class EntityDtoMapper {
         // Clear existing options and set updated ones
         existingOptions.clear();
         existingOptions.addAll(updatedOptions);
+    }
+
+
+    // **************************************************************************** //
+    //    ****************************** ((Post)) ************************* //
+    public Post toPostEntity(CreatePostDTO dto) {
+        return Post.builder()
+                .text(dto.text())
+                .imageUrl(dto.imageUrl())
+                .build();
+    }
+
+    public PostResponseDTO toPostResponseDTO(Post post, Long likesCount, Boolean isLikedByCurrentUser) {
+        return new PostResponseDTO(
+                post.getId(),
+                post.getText(),
+                post.getImageUrl(),
+                post.getCreatedDate(),
+                post.getLastModifiedDate(),
+                likesCount,
+                post.getUser().getId(),
+                post.getUser().getFirstName(),
+                post.getUser().getLastName(),
+                post.getUser().getProfileImageUrl(),
+                isLikedByCurrentUser
+        );
+    }
+
+    //    ****************************** ((Comment)) ************************* //
+    public Comment toCommentEntity(CreateCommentDTO dto) {
+        return Comment.builder()
+                .text(dto.text())
+                .build();
+    }
+
+    public CommentResponseDTO toCommentResponseDTO(
+            Comment comment,
+            Long commentLikesCount,
+            Boolean isLikedByCurrentUser) {
+        return new CommentResponseDTO(
+                comment.getId(),
+                comment.getText(),
+                comment.getCreatedDate(),
+                comment.getLastModifiedDate(),
+                commentLikesCount,
+                comment.getUser().getId(),
+                comment.getUser().getFirstName(),
+                comment.getUser().getLastName(),
+                comment.getUser().getProfileImageUrl(),
+                isLikedByCurrentUser,
+                comment.getPost().getId(),
+                comment.getPost().getText()
+        );
+    }
+
+
+    //    ****************************** ((Reply)) ************************* //
+    public Reply toReplyEntity(CreateReplyDTO dto) {
+        return Reply.builder()
+                .text(dto.text())
+                .build();
+    }
+
+    public ReplyResponseDTO toReplyResponseDTO(Reply reply, Long likesCount, Boolean isLikedByCurrentUser) {
+        return new ReplyResponseDTO(
+                reply.getId(),
+                reply.getText(),
+                reply.getCreatedDate(),
+                reply.getLastModifiedDate(),
+                likesCount,
+                reply.getUser().getId(),
+                reply.getUser().getFirstName(),
+                reply.getUser().getLastName(),
+                reply.getUser().getProfileImageUrl(),
+                isLikedByCurrentUser,
+                reply.getComment().getId()
+        );
+    }
+
+
+    //    ****************************** ((Notifications)) ************************* //
+    public NotificationDTO toNotificationDTO(Notification notification) {
+        return new NotificationDTO(
+                notification.getId(),
+                notification.getTitle(),
+                notification.getMessage(),
+                notification.getIsRead(),
+                notification.getType(),
+                notification.getCreatedDate(),
+                notification.getReferenceId(),
+                notification.getTriggeredByUser().getId(),
+                notification.getTriggeredByUser().getFirstName(),
+                notification.getTriggeredByUser().getLastName(),
+                notification.getTriggeredByUser().getEmail(),
+                notification.getTriggeredByUser().getProfileImageUrl()
+        );
     }
 
 

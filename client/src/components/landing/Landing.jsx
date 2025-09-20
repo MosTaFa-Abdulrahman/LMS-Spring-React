@@ -179,7 +179,8 @@ export default function Landing() {
                 }`}
               >
                 <img
-                  src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTV8fGJlYXV0eSUyMHdvbWFufGVufDB8fDB8fHww"
+                  // src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTV8fGJlYXV0eSUyMHdvbWFufGVufDB8fDB8fHww"
+                  src="http://res.cloudinary.com/dkqpzws52/image/upload/v1749507257/upload/en0jd8hkefihsxxtzay8.jpg"
                   alt="Students learning"
                   className="main-image"
                 />

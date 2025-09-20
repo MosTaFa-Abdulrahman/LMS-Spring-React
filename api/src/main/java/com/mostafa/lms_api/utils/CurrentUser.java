@@ -6,6 +6,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
+import java.util.UUID;
+
 
 @Component
 public class CurrentUser {
@@ -16,6 +18,19 @@ public class CurrentUser {
                 !authentication.getPrincipal().equals("anonymousUser")) {
 
             return (User) authentication.getPrincipal();
+        }
+
+        return null;
+    }
+
+    public UUID getCurrentUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication != null && authentication.isAuthenticated() &&
+                !authentication.getPrincipal().equals("anonymousUser")) {
+
+            User currentUser = (User) authentication.getPrincipal();
+            return currentUser.getId();
         }
 
         return null;

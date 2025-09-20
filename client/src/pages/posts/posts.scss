@@ -1,0 +1,211 @@
+@import "../../styles/responsive.scss";
+@import "../../styles/themes.scss";
+
+.posts {
+  width: 100%;
+  margin: 0 auto;
+  padding: 30px;
+  margin-top: 55px;
+  max-width: 900px; // Default for large screens
+
+  @include themed() {
+    background-color: t(bg-primary);
+  }
+
+  // Responsive adjustments using max-width queries
+  @include xxl {
+    max-width: 1000px;
+    padding: 35px;
+  }
+
+  @include xl {
+    max-width: 850px;
+    padding: 25px;
+  }
+
+  @include lg {
+    max-width: 700px;
+    padding: 20px;
+  }
+
+  @include md {
+    max-width: 100%;
+    padding: 15px;
+  }
+
+  @include sm {
+    padding: 10px;
+  }
+
+  // Empty state
+  &__empty {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 250px;
+    padding: 50px 30px;
+    text-align: center;
+
+    @include themed() {
+      background-color: t(card-bg);
+      border: 1px solid t(border-color);
+    }
+
+    border-radius: 12px;
+
+    @include xl {
+      min-height: 220px;
+      padding: 45px 25px;
+    }
+
+    @include lg {
+      min-height: 200px;
+      padding: 40px 20px;
+    }
+
+    @include md {
+      min-height: 180px;
+      padding: 30px 15px;
+    }
+
+    @include sm {
+      min-height: 160px;
+      padding: 25px 10px;
+    }
+
+    p {
+      @include themed() {
+        color: t(text-secondary);
+      }
+
+      font-size: 18px;
+      line-height: 1.5;
+      margin: 0;
+
+      @include xl {
+        font-size: 17px;
+      }
+
+      @include lg {
+        font-size: 16px;
+      }
+
+      @include md {
+        font-size: 15px;
+      }
+
+      @include sm {
+        font-size: 14px;
+      }
+    }
+  }
+
+  // Loading more posts
+  &__loading-more {
+    display: flex;
+    justify-content: center;
+    padding: 25px;
+    margin-top: 25px;
+
+    @include xl {
+      padding: 22px;
+      margin-top: 22px;
+    }
+
+    @include lg {
+      padding: 20px;
+      margin-top: 20px;
+    }
+
+    @include md {
+      padding: 15px;
+      margin-top: 15px;
+    }
+
+    @include sm {
+      padding: 12px;
+      margin-top: 12px;
+    }
+  }
+
+  // End of posts message
+  &__end {
+    display: flex;
+    justify-content: center;
+    padding: 40px 30px;
+    margin-top: 25px;
+    text-align: center;
+
+    @include themed() {
+      background-color: t(bg-secondary);
+      border: 1px solid t(border-color);
+    }
+
+    border-radius: 10px;
+
+    @include xl {
+      padding: 35px 25px;
+      margin-top: 22px;
+      border-radius: 9px;
+    }
+
+    @include lg {
+      padding: 30px 20px;
+      margin-top: 20px;
+      border-radius: 8px;
+    }
+
+    @include md {
+      padding: 20px 15px;
+      margin-top: 15px;
+    }
+
+    @include sm {
+      padding: 15px 10px;
+      margin-top: 12px;
+    }
+
+    p {
+      @include themed() {
+        color: t(text-secondary);
+      }
+
+      font-size: 16px;
+      margin: 0;
+      opacity: 0.8;
+
+      @include lg {
+        font-size: 15px;
+      }
+
+      @include md {
+        font-size: 14px;
+      }
+
+      @include sm {
+        font-size: 13px;
+      }
+    }
+  }
+
+  // Post items spacing - responsive
+  > * + * {
+    margin-top: 20px;
+
+    @include xl {
+      margin-top: 18px;
+    }
+
+    @include lg {
+      margin-top: 16px;
+    }
+
+    @include md {
+      margin-top: 14px;
+    }
+
+    @include sm {
+      margin-top: 12px;
+    }
+  }
+}

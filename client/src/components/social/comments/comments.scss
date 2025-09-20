@@ -1,0 +1,779 @@
+@import "../../../styles/responsive.scss";
+@import "../../../styles/themes.scss";
+
+.comments {
+  @include themed() {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 24px;
+    background-color: t(bg-primary);
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    margin-top: 10px;
+  }
+
+  @include md {
+    padding: 20px;
+  }
+
+  @include sm {
+    padding: 16px;
+  }
+
+  // Comments Header
+  .comments-header {
+    margin-bottom: 32px;
+    padding-bottom: 16px;
+
+    @include themed() {
+      border-bottom: 1px solid t(border-color);
+    }
+
+    @include md {
+      margin-bottom: 24px;
+    }
+
+    @include sm {
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+    }
+
+    h3 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+
+      @include themed() {
+        color: t(text-primary);
+      }
+
+      @include md {
+        font-size: 18px;
+      }
+
+      @include sm {
+        font-size: 16px;
+      }
+    }
+  }
+
+  // Write Comment Section
+  .write-comment {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 32px;
+    padding: 20px;
+    border-radius: 16px;
+    transition: all 0.3s ease;
+
+    @include themed() {
+      background-color: t(bg-secondary);
+      border: 1px solid t(border-color);
+    }
+
+    &:hover {
+      @include themed() {
+        border-color: t(button-primary);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+      }
+    }
+
+    @include md {
+      padding: 16px;
+      gap: 12px;
+    }
+
+    @include sm {
+      padding: 12px;
+      gap: 10px;
+    }
+
+    .user-avatar {
+      flex-shrink: 0;
+
+      img {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        object-fit: cover;
+
+        @include themed() {
+          border: 2px solid t(border-color);
+        }
+
+        @include md {
+          width: 40px;
+          height: 40px;
+        }
+
+        @include sm {
+          width: 36px;
+          height: 36px;
+        }
+      }
+    }
+
+    .comment-input-container {
+      flex: 1;
+      display: flex;
+      align-items: flex-end;
+      gap: 12px;
+
+      textarea {
+        flex: 1;
+        min-height: 44px;
+        max-height: 120px;
+        padding: 12px 16px;
+        border-radius: 12px;
+        resize: vertical;
+        font-family: inherit;
+        font-size: 14px;
+        line-height: 1.5;
+        outline: none;
+        transition: all 0.2s ease;
+
+        @include themed() {
+          border: 1px solid t(border-color);
+          background-color: t(bg-primary);
+          color: t(text-primary);
+        }
+
+        &:focus {
+          @include themed() {
+            border-color: t(button-primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+          }
+        }
+
+        &::placeholder {
+          @include themed() {
+            color: t(text-secondary);
+          }
+        }
+      }
+
+      .send-btn {
+        flex-shrink: 0;
+        width: 44px;
+        height: 44px;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        opacity: 0.6;
+
+        @include themed() {
+          background-color: t(border-color);
+          color: t(text-secondary);
+        }
+
+        @include md {
+          width: 40px;
+          height: 40px;
+        }
+
+        @include sm {
+          width: 36px;
+          height: 36px;
+        }
+
+        &.active {
+          opacity: 1;
+          transform: scale(1);
+
+          @include themed() {
+            background-color: t(button-primary);
+            color: white;
+          }
+
+          &:hover {
+            @include themed() {
+              background-color: t(button-hover);
+            }
+            transform: scale(1.05);
+          }
+
+          &:active {
+            transform: scale(0.95);
+          }
+        }
+
+        &:disabled {
+          cursor: not-allowed;
+        }
+      }
+    }
+  }
+
+  // Login prompt
+  .login-prompt {
+    text-align: center;
+    padding: 20px;
+    margin-bottom: 16px;
+    border-radius: 8px;
+
+    @include themed() {
+      background-color: t(bg-hover);
+      border: 1px solid t(border-color);
+    }
+
+    @include md {
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+
+    p {
+      @include themed() {
+        color: t(text-secondary);
+      }
+      margin: 0;
+      font-size: 14px;
+
+      @include sm {
+        font-size: 13px;
+      }
+    }
+  }
+
+  // Comments List
+  .comments-list {
+    .comment {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 24px;
+      padding: 20px;
+      border-radius: 16px;
+      transition: all 0.2s ease;
+      animation: slideIn 0.3s ease-out;
+
+      @include themed() {
+        background-color: t(card-bg);
+        border: 1px solid t(border-color);
+      }
+
+      &:hover {
+        @include themed() {
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+          border-color: t(button-primary);
+        }
+      }
+
+      @include md {
+        padding: 16px;
+        gap: 12px;
+      }
+
+      @include sm {
+        padding: 12px;
+        gap: 10px;
+        margin-bottom: 16px;
+      }
+
+      .comment-avatar {
+        flex-shrink: 0;
+
+        img {
+          width: 44px;
+          height: 44px;
+          border-radius: 50%;
+          object-fit: cover;
+
+          @include themed() {
+            border: 2px solid t(border-color);
+          }
+
+          @include md {
+            width: 40px;
+            height: 40px;
+          }
+
+          @include sm {
+            width: 36px;
+            height: 36px;
+          }
+        }
+      }
+
+      .comment-content {
+        flex: 1;
+        min-width: 0;
+
+        .comment-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          margin-bottom: 8px;
+
+          .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+
+            @include sm {
+              gap: 8px;
+            }
+
+            .username {
+              font-weight: 600;
+              font-size: 15px;
+
+              @include themed() {
+                color: t(text-primary);
+              }
+
+              @include sm {
+                font-size: 14px;
+              }
+            }
+
+            .timestamp {
+              font-size: 13px;
+              opacity: 0.8;
+
+              @include themed() {
+                color: t(text-secondary);
+              }
+
+              @include sm {
+                font-size: 12px;
+              }
+            }
+          }
+
+          .comment-menu {
+            position: relative;
+
+            .menu-trigger {
+              border: none;
+              background: transparent;
+              cursor: pointer;
+              padding: 6px;
+              border-radius: 8px;
+              transition: all 0.2s ease;
+              opacity: 0.6;
+
+              @include themed() {
+                color: t(text-secondary);
+              }
+
+              &:hover {
+                opacity: 1;
+
+                @include themed() {
+                  background-color: t(bg-hover);
+                  color: t(text-primary);
+                }
+              }
+            }
+
+            .dropdown-menu {
+              position: absolute;
+              top: 100%;
+              right: 0;
+              border-radius: 8px;
+              box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+              z-index: 10;
+              min-width: 120px;
+              animation: fadeIn 0.2s ease-out;
+
+              @include themed() {
+                background-color: t(card-bg);
+                border: 1px solid t(border-color);
+              }
+
+              .menu-item {
+                width: 100%;
+                padding: 10px 14px;
+                border: none;
+                background: transparent;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                font-size: 13px;
+                transition: all 0.2s ease;
+
+                @include themed() {
+                  color: t(text-primary);
+                }
+
+                &:hover {
+                  @include themed() {
+                    background-color: t(bg-hover);
+                  }
+                }
+
+                &.delete-item {
+                  color: #ef4444;
+
+                  &:hover {
+                    background-color: rgba(239, 68, 68, 0.1);
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        .comment-text {
+          margin-bottom: 12px;
+
+          p {
+            margin: 0;
+            line-height: 1.6;
+            font-size: 14px;
+            word-wrap: break-word;
+
+            @include themed() {
+              color: t(text-primary);
+            }
+
+            @include sm {
+              font-size: 13px;
+            }
+          }
+        }
+
+        .comment-actions {
+          display: flex;
+          align-items: center;
+          gap: 20px;
+
+          @include md {
+            gap: 16px;
+          }
+
+          @include sm {
+            gap: 12px;
+          }
+
+          .action-btn {
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+
+            @include themed() {
+              color: t(text-secondary);
+            }
+
+            @include sm {
+              padding: 4px 6px;
+              font-size: 12px;
+            }
+
+            &:hover {
+              @include themed() {
+                background-color: t(bg-hover);
+                color: t(text-primary);
+              }
+            }
+
+            &.like-btn {
+              &.liked {
+                color: #ef4444;
+
+                &:hover {
+                  color: #dc2626;
+                  background-color: rgba(239, 68, 68, 0.1);
+                }
+              }
+
+              &:hover {
+                transform: scale(1.05);
+              }
+
+              &:active {
+                transform: scale(0.95);
+              }
+            }
+
+            &.reply-btn:hover {
+              @include themed() {
+                color: t(button-primary);
+                background-color: rgba(37, 99, 235, 0.1);
+              }
+            }
+
+            &.view-replies-btn {
+              font-weight: 600;
+
+              @include themed() {
+                color: t(button-primary);
+              }
+
+              &:hover {
+                @include themed() {
+                  color: t(button-hover);
+                  background-color: rgba(37, 99, 235, 0.1);
+                }
+              }
+            }
+          }
+        }
+
+        // Reply Input
+        .reply-input {
+          display: flex;
+          gap: 12px;
+          margin-top: 16px;
+          padding: 16px;
+          border-radius: 12px;
+
+          @include themed() {
+            background-color: t(bg-secondary);
+            border: 1px solid t(border-color);
+          }
+
+          @include md {
+            padding: 12px;
+          }
+
+          @include sm {
+            padding: 10px;
+            gap: 8px;
+          }
+
+          .user-avatar {
+            flex-shrink: 0;
+
+            img {
+              width: 36px;
+              height: 36px;
+              border-radius: 50%;
+              object-fit: cover;
+
+              @include themed() {
+                border: 2px solid t(border-color);
+              }
+
+              @include md {
+                width: 32px;
+                height: 32px;
+              }
+
+              @include sm {
+                width: 28px;
+                height: 28px;
+              }
+            }
+          }
+
+          .reply-input-container {
+            flex: 1;
+            display: flex;
+            align-items: flex-end;
+            gap: 10px;
+
+            textarea {
+              flex: 1;
+              min-height: 36px;
+              max-height: 100px;
+              padding: 10px 14px;
+              border-radius: 10px;
+              resize: vertical;
+              font-family: inherit;
+              font-size: 13px;
+              line-height: 1.4;
+              outline: none;
+              transition: all 0.2s ease;
+
+              @include themed() {
+                border: 1px solid t(border-color);
+                background-color: t(input-bg);
+                color: t(text-primary);
+              }
+
+              &:focus {
+                @include themed() {
+                  border-color: t(button-primary);
+                  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+                }
+              }
+
+              &::placeholder {
+                @include themed() {
+                  color: t(text-secondary);
+                }
+              }
+            }
+
+            .send-btn {
+              flex-shrink: 0;
+              width: 36px;
+              height: 36px;
+              border: none;
+              border-radius: 10px;
+              cursor: pointer;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              transition: all 0.2s ease;
+              opacity: 0.6;
+
+              @include themed() {
+                background-color: t(border-color);
+                color: t(text-secondary);
+              }
+
+              @include sm {
+                width: 32px;
+                height: 32px;
+              }
+
+              &.active {
+                opacity: 1;
+
+                @include themed() {
+                  background-color: t(button-primary);
+                  color: white;
+                }
+
+                &:hover {
+                  @include themed() {
+                    background-color: t(button-hover);
+                  }
+                }
+              }
+
+              &:disabled {
+                cursor: not-allowed;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Loading states
+  .loading-more {
+    display: flex;
+    justify-content: center;
+    padding: 16px;
+
+    @include md {
+      padding: 12px;
+    }
+  }
+
+  .comments-end {
+    text-align: center;
+    padding: 16px;
+
+    @include md {
+      padding: 12px;
+    }
+
+    p {
+      @include themed() {
+        color: t(text-secondary);
+      }
+      font-size: 13px;
+      margin: 0;
+      opacity: 0.8;
+    }
+  }
+
+  // Empty State
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+
+    @include themed() {
+      color: t(text-secondary);
+    }
+
+    @include sm {
+      padding: 40px 16px;
+    }
+
+    svg {
+      margin-bottom: 16px;
+      opacity: 0.5;
+
+      @include themed() {
+        color: t(text-secondary);
+      }
+
+      @include sm {
+        width: 36px;
+        height: 36px;
+      }
+    }
+
+    h4 {
+      margin: 0 0 8px 0;
+      font-size: 18px;
+      font-weight: 600;
+
+      @include themed() {
+        color: t(text-primary);
+      }
+
+      @include md {
+        font-size: 16px;
+      }
+    }
+
+    p {
+      margin: 0;
+      font-size: 14px;
+      opacity: 0.8;
+
+      @include sm {
+        font-size: 13px;
+      }
+    }
+  }
+
+  // Animation keyframes
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  // Apply animations
+  .reply {
+    animation: fadeIn 0.2s ease-out;
+  }
+
+  .dropdown-menu {
+    animation: fadeIn 0.2s ease-out;
+  }
+
+  // Focus states for accessibility
+  button:focus-visible,
+  textarea:focus-visible {
+    @include themed() {
+      outline: 2px solid t(button-primary);
+    }
+    outline-offset: 2px;
+  }
+}

@@ -99,3 +99,6 @@ export const courseStatus = [
   { value: "ARCHIVED", label: "Archived" },
   { value: "SUSPENDED", label: "Suspended" },
 ];
+
+export const defaultUserImg =
+  "https://img.icons8.com/?size=80&id=21441&format=png";

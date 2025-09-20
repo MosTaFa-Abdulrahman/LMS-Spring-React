@@ -469,35 +469,37 @@ function Quizzes() {
               </div>
 
               {/* Actions */}
-              {hasPermmison && (
-                <div className="quiz-actions">
-                  {currentUser.userLevel === quiz.courseLevel && (
+              <div className="quiz-actions">
+                {currentUser.userLevel === quiz.courseLevel && (
+                  <button
+                    className="action-btn go-btn"
+                    onClick={() => handleGoToQuiz(quiz)}
+                    title="Go to Quiz"
+                  >
+                    <Play size={18} />
+                    Go Now
+                  </button>
+                )}
+                {hasPermmison && (
+                  <>
                     <button
-                      className="action-btn go-btn"
-                      onClick={() => handleGoToQuiz(quiz)}
-                      title="Go to Quiz"
+                      className="action-btn edit-btn"
+                      onClick={() => handleEditClick(quiz.id)}
+                      title="Edit Quiz"
                     >
-                      <Play size={18} />
-                      Go Now
+                      <Edit2 size={18} />
                     </button>
-                  )}
-                  <button
-                    className="action-btn edit-btn"
-                    onClick={() => handleEditClick(quiz.id)}
-                    title="Edit Quiz"
-                  >
-                    <Edit2 size={18} />
-                  </button>
-                  <button
-                    className="action-btn delete-btn"
-                    onClick={() => handleDeleteQuiz(quiz.id)}
-                    disabled={isDeleting}
-                    title="Delete Quiz"
-                  >
-                    <Trash2 size={18} />
-                  </button>
-                </div>
-              )}
+                    <button
+                      className="action-btn delete-btn"
+                      onClick={() => handleDeleteQuiz(quiz.id)}
+                      disabled={isDeleting}
+                      title="Delete Quiz"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
           ))
         )}
