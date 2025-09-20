@@ -2,7 +2,7 @@
 
 > A **full-featured Udemy-like LMS** built with **Spring Boot + React.js** 🚀  
 
-![LMS Banner](https://user-images.githubusercontent.com/91504420/188293698-b2a6-4a7f-9341-2c6f95d85f5a.png)  
+![LMS Banner](https://plus.unsplash.com/premium_photo-1669075651663-3f264ed78316?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8TE1TJTIwQkFOTkVSfGVufDB8fDB8fHww)  
 *(Built with ❤️ by Mustafa Abdelrahman)*  
 
 🔗 **Demo Video:** [Watch on LinkedIn](https://www.linkedin.com/posts/mustafa-abdelrahman-86ba06366_learning-management-system-spring-boot-activity-7375289113496866817-HPYT/?utm_source=share&utm_medium=member_desktop&rcm=ACoAAFrrBVMB6rqpWi20p28YzbRTV680oenITWE)  
