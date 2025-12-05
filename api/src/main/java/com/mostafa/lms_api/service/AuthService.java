@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.Map;
 
-
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -24,8 +23,7 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtHelper jwtHelper;
 
-
-    //    Register
+    // Register
     public void register(RegisterRequestDTO dto) {
         User userAccount = new User();
 
@@ -41,7 +39,7 @@ public class AuthService {
         userRepo.save(userAccount);
     }
 
-    //    Login
+    // Login
     public Map<String, Object> login(LoginRequestDTO dto) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(dto.email(), dto.password()));
